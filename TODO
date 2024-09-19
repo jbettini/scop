@@ -1,0 +1,38 @@
+-    Choisissez une bibliothèque graphique cross-platform 
+        Pour la gestion de fenêtre et des événements, je recommande d'utiliser winit. C'est une bibliothèque Rust populaire qui fonctionne sur macOS, Linux et Windows.
+
+-    Utilisez OpenGL comme API graphique 
+        OpenGL est bien supporté sur toutes les plateformes cibles. Vous pouvez utiliser la bibliothèque gl pour les bindings OpenGL en Rust.
+
+-    Pour le chargement des fichiers .obj 
+        Implémentez votre propre parser simple pour les fichiers .obj comme demandé dans le sujet. Évitez d'utiliser des bibliothèques externes pour cela.
+
+-    Utilisez une bibliothèque mathématique 
+        Bien que le sujet mentionne de ne pas utiliser de bibliothèque pour les matrices, je recommande quand même d'utiliser nalgebra pour les calculs mathématiques 3D. C'est une bibliothèque Rust standard pour ce type de calculs.
+
+-    Pour le rendu 3D 
+        Vous pouvez vous inspirer de [tutoriels openGL](https://www.youtube.com/watch?v=DI-laRlVO98) comme celui-ci pour implémenter le pipeline de rendu OpenGL en Rust. Cela vous aidera à comprendre comment configurer les shaders, les buffers, etc.
+
+-    Gestion des shaders 
+        Implémentez votre propre chargeur de shaders simple plutôt que d'utiliser une bibliothèque externe.
+
+-    Texture loading 
+        Pour charger les textures, vous pouvez utiliser la bibliothèque image qui est compatible cross-platform.
+
+-    Build system 
+        Utilisez Cargo, le gestionnaire de paquets et système de build de Rust. Il gère bien les builds cross-platform.
+
+-    Tests sur différentes plateformes 
+        Assurez-vous de tester régulièrementvotre code sur les différentes plateformes cibles pour détecter rapidement les problèmes de compatibilité.
+
+BONUS 
+
+-   Gestion correcte des fichiers .obj ambigus, non coplanaires, concaves. La théière
+fournie avec le sujet est en deux versions : la premiere est l’originale, avec des
+effets de bords étranges. La seconde est un import-export dans Blender, sans re-
+touche humaine, mais un minimum normalisée par le logiciel. Il s’agit d’afficher
+correctement la première.
+-   Application plus subtile de la texture. Elle n’est étirée sur aucune des faces
+-   Drag and drop
+-   Hot Reload
+-   Multi plateform
