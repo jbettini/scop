@@ -1,5 +1,4 @@
--    Choisissez une bibliothèque graphique cross-platform 
-        Pour la gestion de fenêtre et des événements, je recommande d'utiliser winit. C'est une bibliothèque Rust populaire qui fonctionne sur macOS, Linux et Windows.
+
 
 -    Utilisez OpenGL comme API graphique 
         OpenGL est bien supporté sur toutes les plateformes cibles. Vous pouvez utiliser la bibliothèque gl pour les bindings OpenGL en Rust.
@@ -36,3 +35,7 @@ correctement la première.
 -   Drag and drop
 -   Hot Reload
 -   Multi plateform
+
+Current
+
+Color the background
