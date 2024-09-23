@@ -1,22 +1,23 @@
 use winit::{
     application::ApplicationHandler, 
-    event::{WindowEvent}, 
+    event::{WindowEvent,ElementState, KeyEvent}, 
     event_loop::{ActiveEventLoop, EventLoop, ControlFlow},
-    window::{Window, WindowId}
+    window::{Window, WindowId},
+    keyboard::{KeyCode, PhysicalKey}
 };
 
 use glium::{
     glutin::surface::WindowSurface,
-    Surface,
     Display
 };
 
+use super::shape::Triangle;
 
-// #[derive(Default)]
 pub struct App {
     pub window: Option<Window>,
     pub display: Option<Display<WindowSurface>>,
     pub event_loop: Option<EventLoop<()>>,
+    pub form: Triangle
 }
 
 impl App {
@@ -25,6 +26,7 @@ impl App {
             window: None,
             display: None,
             event_loop: Some(EventLoop::new().unwrap()),
+            form: Triangle::default()
         }
     }
     pub fn init_display(&mut self) {
@@ -54,17 +56,37 @@ impl ApplicationHandler for App {
         }
     }
 
+    fn about_to_wait(&mut self, _event_loop: &ActiveEventLoop) {
+        self.window.as_ref().expect("Error: Window is not initialized !").request_redraw();
+    }
+
     fn window_event(&mut self, event_loop: &ActiveEventLoop, _id: WindowId, event: WindowEvent) {
         match event {
             WindowEvent::CloseRequested => {
-                println!("Exited with close button.");
+                println!("Window close requested by the user.");
                 event_loop.exit();
             },
             WindowEvent::RedrawRequested => {
-                let mut frame = self.display.as_ref().expect("Display Inexisting !").draw();
-                frame.clear_color(0.0, 0.0, 1.0, 1.0);
-                frame.finish().unwrap();
+                self.form.draw_triangle(self.display.as_ref().expect("Error: Display Inexisting!"));
                 self.window.as_ref().unwrap().request_redraw();
+            },
+            WindowEvent::KeyboardInput { device_id: _device_id, event, is_synthetic } => {
+                match event {
+                    KeyEvent {
+                        physical_key: PhysicalKey::Code(KeyCode::Escape),
+                        state: ElementState::Pressed,
+                        ..
+                    } if !is_synthetic => {
+                        println!("Escape key pressed - closing the application.");
+                        event_loop.exit();
+                    },
+                    _ => {
+                        // TODO: Autre input clavier
+                    }
+                }
+            },
+            WindowEvent::Resized(window_size) => {
+                self.display.as_ref().expect("Error: Display not initialized.").resize(window_size.into());
             }
             _ => (),
         }
