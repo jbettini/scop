@@ -11,13 +11,16 @@ use glium::{
     Display
 };
 
-use super::shape::{Triangle, Utils};
+use super::triangle::Triangle;
+use super::teapot::{NORMALS, VERTICES, INDICES};
+use super::shape::{Object, Vertex};
 
 pub struct App {
     pub window: Option<Window>,
     pub display: Option<Display<WindowSurface>>,
     pub event_loop: Option<EventLoop<()>>,
-    pub form: Triangle
+    pub form: Option<Object>
+    // pub form: Triangle
 }
 
 impl App {
@@ -26,7 +29,8 @@ impl App {
             window: None,
             display: None,
             event_loop: Some(EventLoop::new().unwrap()),
-            form: Triangle::default()
+            form: None
+            // form: Triangle::default()
         }
     }
     pub fn init_display(&mut self) {
@@ -37,7 +41,7 @@ impl App {
             .with_inner_size(1920, 1920)
             .with_title("Super Scop :O")
             .build(event_loop);
-        self.form.load_textures(&display);
+        self.form = Some(Object::new(&display, &VERTICES[..], &NORMALS[..], &INDICES[..]));
         self.display = Some(display);
         self.window = Some(_window);
     }
@@ -68,7 +72,15 @@ impl ApplicationHandler for App {
                 event_loop.exit();
             },
             WindowEvent::RedrawRequested => {
-                self.form.draw_triangle(self.display.as_ref().expect("Error: Display Inexisting!"));
+                // self.form.draw_triangle(self.display.as_ref().expect("Error: Display Inexisting!"));
+                match self.form {
+                    Some(ref mut object) => {
+                        object.draw_obj(self.display.as_ref().expect("Error: Display Inexisting!"));
+                    },
+                    None => {
+                        println!("Aucun objet n'est présent");
+                    }
+                }
                 self.window.as_ref().unwrap().request_redraw();
             },
             WindowEvent::KeyboardInput { device_id: _device_id, event, is_synthetic } => {
@@ -89,7 +101,6 @@ impl ApplicationHandler for App {
             },
             WindowEvent::Resized(window_size) => {
                 self.display.as_ref().expect("Error: Display not initialized.").resize(window_size.into());
-                // self.form.draw_triangle(self.display.as_ref().expect("Error: Display Inexisting!"));
                 // TODO: Gerer les changement de taille de fenetre
             }
             _ => (),
