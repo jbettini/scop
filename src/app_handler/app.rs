@@ -11,7 +11,7 @@ use glium::{
     Display
 };
 
-use super::shape::Triangle;
+use super::shape::{Triangle, Utils};
 
 pub struct App {
     pub window: Option<Window>,
@@ -34,9 +34,10 @@ impl App {
         event_loop.set_control_flow(ControlFlow::Poll);
         event_loop.set_control_flow(ControlFlow::Wait);
         let (_window, display) = glium::backend::glutin::SimpleWindowBuilder::new()
-            .with_inner_size(1920, 1200)
+            .with_inner_size(1920, 1920)
             .with_title("Super Scop :O")
             .build(event_loop);
+        self.form.load_textures(&display);
         self.display = Some(display);
         self.window = Some(_window);
     }
@@ -79,6 +80,7 @@ impl ApplicationHandler for App {
                     } if !is_synthetic => {
                         println!("Escape key pressed - closing the application.");
                         event_loop.exit();
+                        return ;
                     },
                     _ => {
                         // TODO: Autre input clavier
@@ -87,6 +89,8 @@ impl ApplicationHandler for App {
             },
             WindowEvent::Resized(window_size) => {
                 self.display.as_ref().expect("Error: Display not initialized.").resize(window_size.into());
+                // self.form.draw_triangle(self.display.as_ref().expect("Error: Display Inexisting!"));
+                // TODO: Gerer les changement de taille de fenetre
             }
             _ => (),
         }

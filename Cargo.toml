@@ -4,5 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-glium = "0.35.0"
+glium = "0.36.0"
+image = "0.25.2"
 winit = "0.30.5"

@@ -26,16 +26,15 @@
 
 BONUS 
 
--   Gestion correcte des fichiers .obj ambigus, non coplanaires, concaves. La théière
-fournie avec le sujet est en deux versions : la premiere est l’originale, avec des
-effets de bords étranges. La seconde est un import-export dans Blender, sans re-
-touche humaine, mais un minimum normalisée par le logiciel. Il s’agit d’afficher
-correctement la première.
--   Application plus subtile de la texture. Elle n’est étirée sur aucune des faces
+
 -   Drag and drop
--   Hot Reload
+-   Fps compteur
+-   Camera libre
+-   Zoom
 -   Multi plateform
 
-Current
+Current:
 
-Color the background
+Mise au propre du code
+
+Passer W et H en global Arc
