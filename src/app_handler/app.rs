@@ -11,9 +11,8 @@ use glium::{
     Display
 };
 
-use super::triangle::Triangle;
 use super::teapot::{NORMALS, VERTICES, INDICES};
-use super::shape::{Object, Vertex};
+use super::shape::Object;
 
 pub struct App {
     pub window: Option<Window>,

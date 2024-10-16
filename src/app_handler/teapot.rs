@@ -1,9 +1,5 @@
-use glium;
-
 
 use super::shape::Vertex;
-
-// glium::implement_vertex!(Vertex, position);
 
 pub const VERTICES: [Vertex; 531] = [
     Vertex { position: (0.0, 0.0, 0.0) },   // dummy vector because in the original model indices
