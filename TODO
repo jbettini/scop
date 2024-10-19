@@ -28,22 +28,19 @@ BONUS
 
 
 -   Drag and drop
+-   Hot reload
 -   Fps compteur
 -   Camera libre
 -   Zoom
--   Multi plateform
+-   Multiple commande
 
 Current:
 
-Gouraud shading
-depth testing
+Perspective Matrix
 Backface culling
 The camera
 Blinn-phong shading
 
 
-
-Pasing tga/obj/mtl
-
-
-Passer W et H en global Arc
+Pasrsing tga/obj/mtl
+Triangulisation des carré

@@ -14,11 +14,30 @@ use glium::{
 use super::teapot::{NORMALS, VERTICES, INDICES};
 use super::shape::Object;
 
+pub struct Ctx {
+    pub rotation: bool
+}
+
+impl Ctx {
+    pub fn new() -> Self {
+        Self {
+            rotation: true
+        }
+    }
+}
+
+impl Default for Ctx {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 pub struct App {
     pub window: Option<Window>,
     pub display: Option<Display<WindowSurface>>,
     pub event_loop: Option<EventLoop<()>>,
-    pub form: Option<Object>
+    pub form: Option<Object>,
+    pub ctx: Ctx
     // pub form: Triangle
 }
 
@@ -28,7 +47,8 @@ impl App {
             window: None,
             display: None,
             event_loop: Some(EventLoop::new().unwrap()),
-            form: None
+            form: None,
+            ctx: Ctx::default()
             // form: Triangle::default()
         }
     }
@@ -41,6 +61,7 @@ impl App {
             .with_title("Super Scop :O")
             .build(event_loop);
         self.form = Some(Object::new(&display, &VERTICES[..], &NORMALS[..], &INDICES[..]));
+        // self.ctx = Some(Ctx::new(display));
         self.display = Some(display);
         self.window = Some(_window);
     }
@@ -71,10 +92,9 @@ impl ApplicationHandler for App {
                 event_loop.exit();
             },
             WindowEvent::RedrawRequested => {
-                // self.form.draw_triangle(self.display.as_ref().expect("Error: Display Inexisting!"));
                 match self.form {
                     Some(ref mut object) => {
-                        object.draw_obj(self.display.as_ref().expect("Error: Display Inexisting!"));
+                        object.draw_obj(self.display.as_ref().expect("Error: Display Inexisting!"), &self.ctx);
                     },
                     None => {
                         println!("Aucun objet n'est présent");
@@ -83,30 +103,51 @@ impl ApplicationHandler for App {
                 self.window.as_ref().unwrap().request_redraw();
             },
             WindowEvent::KeyboardInput { device_id: _device_id, event, is_synthetic } => {
-                match event {
-                    KeyEvent {
-                        physical_key: PhysicalKey::Code(KeyCode::Escape),
-                        state: ElementState::Pressed,
-                        ..
-                    } if !is_synthetic => {
-                        println!("Escape key pressed - closing the application.");
-                        event_loop.exit();
-                        return ;
-                    },
-                    _ => {
-                        // TODO: Autre input clavier
+                if is_synthetic {
+                    return ;
+                }
+                if let KeyEvent { 
+                    physical_key: PhysicalKey::Code(key_code),
+                    state: ElementState::Pressed,
+                    ..
+                } = event {
+                    match key_code {
+                        KeyCode::Escape => {
+                            println!("Escape key pressed - closing the application.");
+                            event_loop.exit();
+                        },
+                        KeyCode::Space => {
+                            self.ctx.rotation = !self.ctx.rotation;
+                        },
+                        _ => {
+                            // TODO: Autre input clavier
+                        }
                     }
                 }
             },
             WindowEvent::Resized(window_size) => {
                 self.display.as_ref().expect("Error: Display not initialized.").resize(window_size.into());
                 // TODO: Gerer les changement de taille de fenetre
-            }
-            _ => (),
+            },
+            _ => {}
         }
     }
 }
 
+// match event {
+//     KeyEvent {
+//         physical_key: PhysicalKey::Code(KeyCode::Escape),
+//         state: ElementState::Pressed,
+//         ..
+//     } if !is_synthetic => {
+//         println!("Escape key pressed - closing the application.");
+//         event_loop.exit();
+//         return ;
+//     },
+//     _ => {
+//         // TODO: Autre input clavier
+//     }
+// }
 impl Default for App {
     fn default() -> Self {
         Self::new()
