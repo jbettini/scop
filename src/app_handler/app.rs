@@ -61,7 +61,6 @@ impl App {
             .with_title("Super Scop :O")
             .build(event_loop);
         self.form = Some(Object::new(&display, &VERTICES[..], &NORMALS[..], &INDICES[..]));
-        // self.ctx = Some(Ctx::new(display));
         self.display = Some(display);
         self.window = Some(_window);
     }
@@ -134,20 +133,7 @@ impl ApplicationHandler for App {
     }
 }
 
-// match event {
-//     KeyEvent {
-//         physical_key: PhysicalKey::Code(KeyCode::Escape),
-//         state: ElementState::Pressed,
-//         ..
-//     } if !is_synthetic => {
-//         println!("Escape key pressed - closing the application.");
-//         event_loop.exit();
-//         return ;
-//     },
-//     _ => {
-//         // TODO: Autre input clavier
-//     }
-// }
+
 impl Default for App {
     fn default() -> Self {
         Self::new()

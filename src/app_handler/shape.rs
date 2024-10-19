@@ -57,19 +57,19 @@ impl Object {
 
     pub fn draw_obj(&mut self, display: &Display<WindowSurface>, ctx: &Ctx) {
         if ctx.rotation == true {
-            self.rot_speed += 0.02;
+            self.rot_speed += 0.015;
         }
         let uniforms = uniform! {
             rotation_matrix: [
                 [   self.rot_speed.cos() / 150.0,      0.0,        -self.rot_speed.sin() / 150.0,     0.0],
-                [                          0.0,      0.0066,                             0.0,     0.0],
+                [                            0.0,   0.0066,                                  0.0,     0.0],
                 [   self.rot_speed.sin() / 150.0,      0.0,         self.rot_speed.cos() / 150.0,     0.0],
-                [                          0.0,      0.0,                                2.0,     1.0f32],
+                [                            0.0,      0.0,                                  2.0,  1.0f32],
             
             ],
             perspective_matrix: {
                 let (width, height) = display.get_framebuffer_dimensions();
-                let aspect_ratio = (height / width) as f32;
+                let aspect_ratio = height as f32 / width as f32;
             
                 let fov: f32 = std::f32::consts::PI / 3.0;
                 let zfar = 1024.0;
@@ -99,6 +99,7 @@ impl Object {
             void main() {
                 v_normal = transpose(inverse(mat3(rotation_matrix))) * normal; 
                 gl_Position = perspective_matrix * rotation_matrix * vec4(position, 1.0);
+
             }
         "#;
 
