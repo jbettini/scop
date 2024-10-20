@@ -57,7 +57,7 @@ impl App {
         event_loop.set_control_flow(ControlFlow::Poll);
         event_loop.set_control_flow(ControlFlow::Wait);
         let (_window, display) = glium::backend::glutin::SimpleWindowBuilder::new()
-            .with_inner_size(1920, 1920)
+            .with_inner_size(1080, 1080)
             .with_title("Super Scop :O")
             .build(event_loop);
         self.form = Some(Object::new(&display, &VERTICES[..], &NORMALS[..], &INDICES[..]));

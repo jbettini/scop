@@ -64,7 +64,7 @@ impl Object {
                 [   self.rot_speed.cos() / 150.0,      0.0,        -self.rot_speed.sin() / 150.0,     0.0],
                 [                            0.0,   0.0066,                                  0.0,     0.0],
                 [   self.rot_speed.sin() / 150.0,      0.0,         self.rot_speed.cos() / 150.0,     0.0],
-                [                            0.0,      0.0,                                  2.0,  1.0f32],
+                [                            0.0,      0.0,                                  2.5,  1.0f32],
             
             ],
             perspective_matrix: {
@@ -74,12 +74,11 @@ impl Object {
                 let fov: f32 = std::f32::consts::PI / 3.0;
                 let zfar = 1024.0;
                 let znear = 0.1;
-            
                 let f = 1.0 / (fov / 2.0).tan();
             
                 [
                     [f *   aspect_ratio   ,    0.0,              0.0              ,   0.0],
-                    [         0.0         ,     f ,              0.0              ,   0.0],
+                    [         0.0         ,     f,               0.0              ,   0.0],
                     [         0.0         ,    0.0,  (zfar+znear)/(zfar-znear)    ,   1.0],
                     [         0.0         ,    0.0, -(2.0*zfar*znear)/(zfar-znear),   0.0],
                 ]
