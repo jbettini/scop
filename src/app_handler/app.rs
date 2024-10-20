@@ -15,13 +15,19 @@ use super::teapot::{NORMALS, VERTICES, INDICES};
 use super::shape::Object;
 
 pub struct Ctx {
-    pub rotation: bool
+    pub rotation: bool,
+    pub x_factor: f32,
+    pub y_factor: f32,
+    pub z_factor: f32
 }
 
 impl Ctx {
     pub fn new() -> Self {
         Self {
-            rotation: true
+            rotation: true,
+            x_factor: 0.0,
+            y_factor: 0.0,
+            z_factor: 3.5
         }
     }
 }
@@ -118,6 +124,19 @@ impl ApplicationHandler for App {
                         KeyCode::Space => {
                             self.ctx.rotation = !self.ctx.rotation;
                         },
+                        KeyCode::KeyA => {
+                            self.ctx.x_factor += 0.05;
+                        },
+                        KeyCode::KeyD => {
+                            self.ctx.x_factor -= 0.05;
+                        },
+                        KeyCode::KeyS => {
+                            self.ctx.z_factor += 0.05;
+                        },
+                        KeyCode::KeyW => {
+                            self.ctx.z_factor -= 0.05;
+
+                        },
                         _ => {
                             // TODO: Autre input clavier
                         }
@@ -130,6 +149,21 @@ impl ApplicationHandler for App {
             },
             _ => {}
         }
+    }
+    fn exiting(&mut self, _event_loop: &ActiveEventLoop) {
+        println!("Application is shutting down...");
+
+        // Nettoyage de l'affichage
+        self.display.as_ref().unwrap().finish();
+        println!("Display resources cleaned up.");
+
+        if let Some(window) = self.window.take() {
+            drop(window);
+            println!("Window resources cleaned up.");
+        }
+
+        self.event_loop = None;
+        println!("Cleanup complete. Goodbye!");
     }
 }
 

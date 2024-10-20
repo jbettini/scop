@@ -32,7 +32,8 @@ pub struct Object {
     pub indice: IndexBuffer<u16>,
     pub normal: VertexBuffer<Normal>,
     pub position: VertexBuffer<Vertex>,
-    pub rot_speed: f32
+    pub rot_speed: f32,
+
 }
 
 impl Object {
@@ -51,7 +52,7 @@ impl Object {
                 glium::index::PrimitiveType::TrianglesList,
                 indices,
             ).unwrap(),
-            rot_speed: 0.0
+            rot_speed: 0.0,
         }
     }
 
@@ -61,10 +62,10 @@ impl Object {
         }
         let uniforms = uniform! {
             rotation_matrix: [
-                [   self.rot_speed.cos() / 150.0,      0.0,        -self.rot_speed.sin() / 150.0,     0.0],
-                [                            0.0,   0.0066,                                  0.0,     0.0],
-                [   self.rot_speed.sin() / 150.0,      0.0,         self.rot_speed.cos() / 150.0,     0.0],
-                [                            0.0,      0.0,                                  2.5,  1.0f32],
+                [   self.rot_speed.cos() / 150.0,              0.0,        -self.rot_speed.sin() / 150.0,     0.0],
+                [                            0.0,           0.0066,                                  0.0,     0.0],
+                [   self.rot_speed.sin() / 150.0,              0.0,         self.rot_speed.cos() / 150.0,     0.0],
+                [                   ctx.x_factor,     ctx.y_factor,                         ctx.z_factor,  1.0f32],
             
             ],
             perspective_matrix: {
@@ -83,7 +84,7 @@ impl Object {
                     [         0.0         ,    0.0, -(2.0*zfar*znear)/(zfar-znear),   0.0],
                 ]
             },
-            light: [-1.0, 0.4, 0.9f32]
+            light: [0.5, 1.0, -0.5f32]
         };
 
         let vertex_shader_src = r#"
@@ -92,6 +93,7 @@ impl Object {
             in vec3 normal;
 
             out vec3 v_normal;
+            out vec3 v_position;
             uniform mat4 rotation_matrix;
             uniform mat4 perspective_matrix;
 
@@ -101,25 +103,76 @@ impl Object {
 
             }
         "#;
+        // // -----------------> Gouraud Shading
+        // let fragment_shader_src = r#"
+        //     #version 330
+        //     in vec3 v_normal;
+        //     out vec4 color;
+        //     uniform vec3 light;
 
+        //     void main() {
+        //         float brightness = dot(normalize(v_normal), normalize(light));
+        //         vec3 dark_color = vec3(0.0, 0.45, 0.45);
+        //         vec3 regular_color = vec3(0.0, 1.0, 1.0);
+        //         color = vec4(mix(dark_color, regular_color, brightness), 1.0);
+        //     }
+        // "#;
+        // // -----------------> Gouraud Shading
+
+        // -----------------> Blin Phong Shading
+        // let fragment_shader_src = r#"
+        //     #version 330
+        //     in vec3 v_normal;
+        //     in vec3 v_position;
+
+        //     out vec4 color;
+
+        //     uniform vec3 light;
+
+        //     const vec3 ambient_color = vec3(0.0, 0.2, 0.2);
+        //     const vec3 diffuse_color = vec3(0.0, 0.6, 0.6);
+        //     const vec3 specular_color = vec3(1.0, 1.0, 1.0);
+
+        //     void main() {
+        //         float diffuse = max(dot(normalize(v_normal), normalize(light)), 0.0);
+
+        //         vec3 camera_dir = normalize(-v_position);
+        //         vec3 half_direction = normalize(normalize(light) + camera_dir);
+        //         float specular = pow(max(dot(normalize(v_normal), half_direction), 0.0), 16.0);
+
+        //         color = vec4(ambient_color + diffuse * diffuse_color + specular * specular_color, 1.0);
+        //     }
+        // "#;
+
+        // -----------------> Blin Phong Shading
         let fragment_shader_src = r#"
             #version 330
             in vec3 v_normal;
+            in vec3 v_position;
+
             out vec4 color;
+
             uniform vec3 light;
 
+            const vec3 ambient_color = vec3(0.0, 0.2, 0.2);
+            const vec3 diffuse_color = vec3(0.0, 0.6, 0.6);
+            const vec3 specular_color = vec3(1.0, 1.0, 1.0);
+
             void main() {
-                float brightness = dot(normalize(v_normal), normalize(light));
-                vec3 dark_color = vec3(0.0, 0.45, 0.45);
-                vec3 regular_color = vec3(0.0, 1.0, 1.0);
-                color = vec4(mix(dark_color, regular_color, brightness), 1.0);
+                float diffuse = max(dot(normalize(v_normal), normalize(light)), 0.0);
+
+                vec3 camera_dir = normalize(-v_position);
+                vec3 half_direction = normalize(normalize(light) + camera_dir);
+                float specular = pow(max(dot(normalize(v_normal), half_direction), 0.0), 16.0);
+
+                color = vec4(ambient_color + diffuse * diffuse_color + specular * specular_color, 1.0);
             }
         "#;
         
         let program = glium::Program::from_source(display, vertex_shader_src, fragment_shader_src, None).expect("Error: \"glium::Program::from_source\" Fail");
         let mut frame = display.draw();
 
-        // ------------->Depth Testing Params
+        // ------------->Depth Testing Params + Backface culling
         frame.clear_color_and_depth((0.5, 0.5, 0.5, 1.0), 1.0);
         let params = glium::DrawParameters {
             depth: glium::Depth {
@@ -127,6 +180,7 @@ impl Object {
                 write: true,
                 .. Default::default()
             },
+            backface_culling: glium::draw_parameters::BackfaceCullingMode::CullClockwise,
             .. Default::default()
         };
 
