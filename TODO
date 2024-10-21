@@ -1,15 +1,41 @@
-BONUS 
-
-
--   Drag and drop
--   Hot reload
--   Camera libre
--   Zoom
--   Multiple commande
 
 Current:
 
-Modifier l'angle de la camera
-Textures
-Pasrsing tga/obj/mtl
+menu help pour les commande
+Deplacement en y
+
+Parsing Obj
 Triangulisation des carré
+Textures
+Parsing Tga
+Pasrsing mtl
+
+
+
+BONUS 
+
+
+-   Drag and drop       // Besoin du parsing des obj
+-   Hot reload          // Besoin du parsing des mtl
+-   Camera libre
+-   Multiple commande                                                   Total 4/6
+        Different type de lumiere                                       Ok
+        Stoper la rotation                                              Ok
+        Different type d'affichage (Fill, Line, Point)                  Ok
+        Gestion du Backface Culling                                     Ok
+        Changement Du sens de rotation 
+        gestion de la vitesse de rotation
+
+
+Touche:
+
+V : Changer le draw polygone mode (fill, line, point)
+B : Active ou desactive le backface culling
+L : switch entre gouraud et blin phong shading
+Z : Avance en Z
+S : Recule en Z
+Q : Deplace vers la gauche
+D : Deplace vers la droite
+
+Fleche du haut: Deplace vers le Haut
+Flach du bas : Deplace vers le bas
