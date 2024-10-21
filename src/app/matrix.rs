@@ -9,20 +9,22 @@ pub struct Matrix {
 
 impl Matrix {
     pub fn new_rotation(ctx: &Ctx) -> Self {
+        let cos: f32 = ctx.rot_speed.cos() / 100.0;
+        let sin: f32 = ctx.rot_speed.sin() / 100.0;
         Self {
-            mx: [   ctx.rot_speed.cos() / 100.0,              0.0,        -ctx.rot_speed.sin() / 100.0,     0.0],
-            my: [                           0.0,             0.01,                                 0.0,     0.0],
-            mz: [   ctx.rot_speed.sin() / 100.0,              0.0,         ctx.rot_speed.cos() / 100.0,     0.0],
-            mw: [                  ctx.x_factor,     ctx.y_factor,                        ctx.z_factor,     1.0f32]
+            mx: [   cos          ,       0.0       ,       -sin,         0.0],
+            my: [   0.0          ,      0.01       ,        0.0,         0.0],
+            mz: [   sin          ,       0.0       ,        cos,         0.0],
+            mw: [ ctx.x_factor   ,  ctx.y_factor   ,   ctx.z_factor,     1.0f32]
         }
     }
     pub  fn new_perspective(ctx: &Ctx) -> Self {
-        let aspect_ratio = ctx.height as f32 / ctx.width as f32;
+        let aspect_ratio: f32 = ctx.height as f32 / ctx.width as f32;
 
         let fov: f32 = std::f32::consts::PI / 3.0;
-        let zfar = 1024.0;
-        let znear = 0.1;
-        let f = 1.0 / (fov / 2.0).tan();
+        let zfar: f32 = 1024.0;
+        let znear: f32 = 0.1;
+        let f: f32 = 1.0 / (fov / 2.0).tan();
 
         Self {
             mx: [f *   aspect_ratio   ,    0.0,              0.0              ,   0.0],

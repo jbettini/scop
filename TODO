@@ -1,10 +1,9 @@
 
 Current:
 
-menu help pour les commande
-Deplacement en y
-
 Parsing Obj
+
+
 Triangulisation des carré
 Textures
 Parsing Tga
@@ -18,13 +17,13 @@ BONUS
 -   Drag and drop       // Besoin du parsing des obj
 -   Hot reload          // Besoin du parsing des mtl
 -   Camera libre
--   Multiple commande                                                   Total 4/6
+-   Multiple commande                                                   Total 6/6
         Different type de lumiere                                       Ok
         Stoper la rotation                                              Ok
         Different type d'affichage (Fill, Line, Point)                  Ok
         Gestion du Backface Culling                                     Ok
-        Changement Du sens de rotation 
-        gestion de la vitesse de rotation
+        Changement Du sens de rotation                                  Ok
+        gestion de la vitesse de rotation                               Ok
 
 
 Touche:
@@ -38,4 +37,9 @@ Q : Deplace vers la gauche
 D : Deplace vers la droite
 
 Fleche du haut: Deplace vers le Haut
-Flach du bas : Deplace vers le bas
+Fleche du bas : Deplace vers le bas
+Fleche de gauche : accelere la rotation vers la gauche 
+Fleche de droite : accelere la rotation vers la droite
+X: Change le sens de la rotation
+
+Souris: deplacement de lángle de la camera

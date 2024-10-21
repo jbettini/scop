@@ -14,7 +14,8 @@ use glium::{
 use super::{
     ctx::Ctx,
     teapot::{NORMALS, VERTICES, INDICES},
-    object::Object
+    object::Object,
+    utils
 };
 
 pub struct App {
@@ -36,6 +37,7 @@ impl App {
         }
     }
     pub fn init_display(&mut self) {
+        utils::print_help();
         let event_loop = self.event_loop.as_ref().expect("EventLoop should be initialized");
         event_loop.set_control_flow(ControlFlow::Poll);
         event_loop.set_control_flow(ControlFlow::Wait);
@@ -113,6 +115,28 @@ impl ApplicationHandler for App {
                         KeyCode::KeyW => {
                             self.ctx.z_factor -= 0.05;
                         },
+                        KeyCode::ArrowDown => {
+                            self.ctx.y_factor += 0.05;
+                        },
+                        KeyCode::ArrowUp => {
+                            self.ctx.y_factor -= 0.05;
+                        },
+                        KeyCode::ArrowLeft => {
+                            let speed: f32 = self.ctx.speed_factor;
+                            if speed < 0.4 {
+                                self.ctx.speed_factor += 0.005;
+                            } else {
+                                self.ctx.speed_factor = 0.4;
+                            }
+                        }
+                        KeyCode::ArrowRight => {
+                            let speed: f32 = self.ctx.speed_factor;
+                            if speed > -0.4 {
+                                self.ctx.speed_factor -= 0.005;
+                            } else {
+                                self.ctx.speed_factor = -0.4;
+                            }
+                        }
                         KeyCode::KeyL => {
                             if let Some(form) = &mut self.form {
                                 form.shaders_switch(& mut self.ctx);
@@ -124,16 +148,19 @@ impl ApplicationHandler for App {
                         KeyCode::KeyV => {
                             self.ctx.polmode = !self.ctx.polmode;
                         }
-                        _ => {
-                            // TODO: Autre input clavier
+                        KeyCode::KeyH => {
+                            utils::print_help();
                         }
+                        KeyCode::KeyX => {
+                            self.ctx.speed_factor *= -1.0;
+                        }
+                        _ => {}
                     }
                 }
             },
             WindowEvent::Resized(window_size) => {
                 self.display.as_ref().expect("Error: Display not initialized.").resize(window_size.into());
                 (self.ctx.width, self.ctx.height) = self.display.as_ref().unwrap().get_framebuffer_dimensions();
-                // TODO: Gerer les changement de taille de fenetre
             },
             _ => {}
         }

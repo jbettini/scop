@@ -66,7 +66,7 @@ impl Object {
 
     pub fn draw_obj(&mut self, display: &Display<WindowSurface>, ctx: & mut Ctx) {
         if ctx.rotation == true {
-            ctx.rot_speed += 0.015;
+            ctx.rot_speed += ctx.speed_factor;
         }
         let uniforms = uniform! {
             rotation_matrix: Matrix::new_rotation(ctx).get_4x4_matrix(),

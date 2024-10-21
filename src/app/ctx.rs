@@ -8,7 +8,10 @@ pub struct Ctx {
     pub rot_speed: f32,
     pub shading: bool,
     pub backface: bool,
-    pub polmode: bool
+    pub polmode: bool,
+    pub speed_factor: f32
+    // pub x_rotation: [bool; 2],
+    // pub y_rotation: [bool; 2]
 }
 
 impl Ctx {
@@ -23,7 +26,10 @@ impl Ctx {
             rot_speed: 0.0,
             shading: true,
             backface: true,
-            polmode: true
+            polmode: true,
+            speed_factor: 0.015
+            // x_rotation: [true, false],
+            // y_rotation: [false, false]
         }
     }
 }
