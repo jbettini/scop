@@ -1,5 +1,5 @@
 
-use super::shape::Vertex;
+use super::object::Vertex;
 
 pub const VERTICES: [Vertex; 531] = [
     Vertex { position: (0.0, 0.0, 0.0) },   // dummy vector because in the original model indices
@@ -536,7 +536,7 @@ pub const VERTICES: [Vertex; 531] = [
     Vertex { position: (34.9202, 28.3457, -15.6121) }
 ];
 
-use super::shape::Normal;
+use super::object::Normal;
 
 pub const NORMALS: [Normal; 531] = [
     Normal { normal: (0.0, 0.0, 0.0) },     // dummy vector because in the original model indices

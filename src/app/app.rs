@@ -11,32 +11,11 @@ use glium::{
     Display
 };
 
-use super::teapot::{NORMALS, VERTICES, INDICES};
-use super::shape::Object;
-
-pub struct Ctx {
-    pub rotation: bool,
-    pub x_factor: f32,
-    pub y_factor: f32,
-    pub z_factor: f32
-}
-
-impl Ctx {
-    pub fn new() -> Self {
-        Self {
-            rotation: true,
-            x_factor: 0.0,
-            y_factor: 0.0,
-            z_factor: 3.5
-        }
-    }
-}
-
-impl Default for Ctx {
-    fn default() -> Self {
-        Self::new()
-    }
-}
+use super::{
+    ctx::Ctx,
+    teapot::{NORMALS, VERTICES, INDICES},
+    object::Object
+};
 
 pub struct App {
     pub window: Option<Window>,
@@ -44,7 +23,6 @@ pub struct App {
     pub event_loop: Option<EventLoop<()>>,
     pub form: Option<Object>,
     pub ctx: Ctx
-    // pub form: Triangle
 }
 
 impl App {
@@ -55,7 +33,6 @@ impl App {
             event_loop: Some(EventLoop::new().unwrap()),
             form: None,
             ctx: Ctx::default()
-            // form: Triangle::default()
         }
     }
     pub fn init_display(&mut self) {
@@ -63,7 +40,7 @@ impl App {
         event_loop.set_control_flow(ControlFlow::Poll);
         event_loop.set_control_flow(ControlFlow::Wait);
         let (_window, display) = glium::backend::glutin::SimpleWindowBuilder::new()
-            .with_inner_size(1080, 1080)
+            .with_inner_size(self.ctx.width, self.ctx.height)
             .with_title("Super Scop :O")
             .build(event_loop);
         self.form = Some(Object::new(&display, &VERTICES[..], &NORMALS[..], &INDICES[..]));
@@ -99,7 +76,7 @@ impl ApplicationHandler for App {
             WindowEvent::RedrawRequested => {
                 match self.form {
                     Some(ref mut object) => {
-                        object.draw_obj(self.display.as_ref().expect("Error: Display Inexisting!"), &self.ctx);
+                        object.draw_obj(self.display.as_ref().expect("Error: Display Inexisting!"), & mut self.ctx);
                     },
                     None => {
                         println!("Aucun objet n'est présent");
@@ -135,7 +112,11 @@ impl ApplicationHandler for App {
                         },
                         KeyCode::KeyW => {
                             self.ctx.z_factor -= 0.05;
-
+                        },
+                        KeyCode::KeyL => {
+                            if let Some(form) = &mut self.form {
+                                form.shaders_switch(& mut self.ctx);
+                            }                   
                         },
                         _ => {
                             // TODO: Autre input clavier
@@ -145,6 +126,7 @@ impl ApplicationHandler for App {
             },
             WindowEvent::Resized(window_size) => {
                 self.display.as_ref().expect("Error: Display not initialized.").resize(window_size.into());
+                (self.ctx.width, self.ctx.height) = self.display.as_ref().unwrap().get_framebuffer_dimensions();
                 // TODO: Gerer les changement de taille de fenetre
             },
             _ => {}
@@ -152,18 +134,13 @@ impl ApplicationHandler for App {
     }
     fn exiting(&mut self, _event_loop: &ActiveEventLoop) {
         println!("Application is shutting down...");
-
-        // Nettoyage de l'affichage
         self.display.as_ref().unwrap().finish();
         println!("Display resources cleaned up.");
-
         if let Some(window) = self.window.take() {
             drop(window);
             println!("Window resources cleaned up.");
         }
-
         self.event_loop = None;
-        println!("Cleanup complete. Goodbye!");
     }
 }
 
