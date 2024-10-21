@@ -83,7 +83,16 @@ impl Object {
                 write: true,
                 .. Default::default()
             },
-            backface_culling: glium::draw_parameters::BackfaceCullingMode::CullClockwise,
+            backface_culling: if ctx.backface {
+                glium::draw_parameters::BackfaceCullingMode::CullClockwise
+            } else {
+                glium::draw_parameters::BackfaceCullingMode::CullingDisabled
+            },
+            polygon_mode: if !ctx.polmode {
+                glium::draw_parameters::PolygonMode::Line
+            } else {
+                glium::draw_parameters::PolygonMode::Fill
+            },
             .. Default::default()
         };
         // ------------->Depth Testing

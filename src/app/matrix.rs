@@ -10,9 +10,9 @@ pub struct Matrix {
 impl Matrix {
     pub fn new_rotation(ctx: &Ctx) -> Self {
         Self {
-            mx: [   ctx.rot_speed.cos() / 150.0,              0.0,        -ctx.rot_speed.sin() / 150.0,     0.0],
-            my: [                           0.0,           0.0066,                                 0.0,     0.0],
-            mz: [   ctx.rot_speed.sin() / 150.0,              0.0,         ctx.rot_speed.cos() / 150.0,     0.0],
+            mx: [   ctx.rot_speed.cos() / 100.0,              0.0,        -ctx.rot_speed.sin() / 100.0,     0.0],
+            my: [                           0.0,             0.01,                                 0.0,     0.0],
+            mz: [   ctx.rot_speed.sin() / 100.0,              0.0,         ctx.rot_speed.cos() / 100.0,     0.0],
             mw: [                  ctx.x_factor,     ctx.y_factor,                        ctx.z_factor,     1.0f32]
         }
     }

@@ -118,6 +118,12 @@ impl ApplicationHandler for App {
                                 form.shaders_switch(& mut self.ctx);
                             }                   
                         },
+                        KeyCode::KeyB => {
+                            self.ctx.backface = !self.ctx.backface;
+                        }
+                        KeyCode::KeyV => {
+                            self.ctx.polmode = !self.ctx.polmode;
+                        }
                         _ => {
                             // TODO: Autre input clavier
                         }
