@@ -4,4 +4,5 @@ pub mod teapot;
 pub mod matrix;
 pub mod shaders;
 pub mod ctx;
+pub mod parser;
 pub mod utils;

@@ -49,13 +49,15 @@ impl Object {
     ) -> Self {
         Self {
             // texture: None,
-            position: glium::VertexBuffer::new(display, vertices).unwrap(),
-            normal: glium::VertexBuffer::new(display, normals).unwrap(),
+            position: glium::VertexBuffer::new(display, vertices)
+                        .expect("Failed to create position buffer"),
+            normal: glium::VertexBuffer::new(display, normals)
+                        .expect("Failed to create normal buffer"),
             indice: glium::IndexBuffer::new(
                 display,
                 glium::index::PrimitiveType::TrianglesList,
                 indices,
-            ).unwrap(),
+            ).expect("Failed to create index buffer"),
             shaders: Shader::default()
         }
     }

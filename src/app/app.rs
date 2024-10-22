@@ -31,7 +31,7 @@ impl App {
         Self {
             window: None,
             display: None,
-            event_loop: Some(EventLoop::new().unwrap()),
+            event_loop: Some(EventLoop::new().expect("Error: Fail to init EvemtLoop.")),
             form: None,
             ctx: Ctx::default()
         }
@@ -84,7 +84,7 @@ impl ApplicationHandler for App {
                         println!("Aucun objet n'est présent");
                     }
                 }
-                self.window.as_ref().unwrap().request_redraw();
+                self.window.as_ref().expect("Error: Window should be initialized").request_redraw();
             },
             WindowEvent::KeyboardInput { device_id: _device_id, event, is_synthetic } => {
                 if is_synthetic {
@@ -160,14 +160,14 @@ impl ApplicationHandler for App {
             },
             WindowEvent::Resized(window_size) => {
                 self.display.as_ref().expect("Error: Display not initialized.").resize(window_size.into());
-                (self.ctx.width, self.ctx.height) = self.display.as_ref().unwrap().get_framebuffer_dimensions();
+                (self.ctx.width, self.ctx.height) = self.display.as_ref().expect("Error: Display should be initialized").get_framebuffer_dimensions();
             },
             _ => {}
         }
     }
     fn exiting(&mut self, _event_loop: &ActiveEventLoop) {
         println!("Application is shutting down...");
-        self.display.as_ref().unwrap().finish();
+        self.display.as_ref().expect("Error: Display not initialized.").finish();
         println!("Display resources cleaned up.");
         if let Some(window) = self.window.take() {
             drop(window);
