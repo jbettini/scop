@@ -13,8 +13,11 @@ use glium::{
 
 use super::{
     ctx::Ctx,
-    teapot::{NORMALS, VERTICES, INDICES},
     object::Object,
+    parser::{
+        obj_parser,
+        ObjParams
+    },
     utils
 };
 
@@ -23,7 +26,8 @@ pub struct App {
     pub display: Option<Display<WindowSurface>>,
     pub event_loop: Option<EventLoop<()>>,
     pub form: Option<Object>,
-    pub ctx: Ctx
+    pub ctx: Ctx,
+    pub obj: ObjParams,
 }
 
 impl App {
@@ -33,7 +37,8 @@ impl App {
             display: None,
             event_loop: Some(EventLoop::new().expect("Error: Fail to init EvemtLoop.")),
             form: None,
-            ctx: Ctx::default()
+            ctx: Ctx::default(),
+            obj: obj_parser("../../obj/teapot2.obj").unwrap(),
         }
     }
     pub fn init_display(&mut self) {
@@ -45,7 +50,9 @@ impl App {
             .with_inner_size(self.ctx.width, self.ctx.height)
             .with_title("Super Scop :O")
             .build(event_loop);
-        self.form = Some(Object::new(&display, &VERTICES[..], &NORMALS[..], &INDICES[..]));
+        let indices = self.obj.clone().get_indices();
+        let normals = self.obj.clone().get_normals();
+        self.form = Some(Object::new(&display, &self.obj.v[..], &normals[..], &indices[..]));
         self.display = Some(display);
         self.window = Some(_window);
     }

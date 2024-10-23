@@ -16,19 +16,37 @@ use super::{
 };
 
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct Normal {
     pub normal: (f32, f32, f32),
 }
 glium::implement_vertex!(Normal, normal);
+impl Normal {
+    pub fn new(x: f32, y: f32, z: f32) -> Self {
+        Self {
+            normal: (x, y, z)
+        }
+    }
+}
 
-
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct Vertex {
-    pub position: (f32, f32, f32)
+    pub position: (f32, f32, f32),
     // pub tex_coords: [f32; 2]
-}    
-glium::implement_vertex!(Vertex, position); 
+}
+
+glium::implement_vertex!(Vertex, position);
+
+impl Vertex {
+    pub fn from_vec(vec: &[f64]) -> Result<Self, &'static str> {
+        if vec.len() != 3 {
+            return Err("Error: Invalid argument: Vertex::from_vec requires exactly 3 elements.");
+        }
+        Ok(Self {
+            position: (vec[0] as f32, vec[1] as f32, vec[2] as f32),
+        })
+    }
+}
 
 
 pub struct Object {
@@ -62,6 +80,10 @@ impl Object {
         }
     }
 
+    pub fn get_color(r: u8, g: u8, b: u8) -> (f32, f32, f32, f32) {
+        return ((r as f32 / 255.0),  (g as f32 / 255.0), (b as f32 / 255.0) , 1.0);
+    }
+
     pub fn shaders_switch(&mut self, ctx: &mut Ctx) {
         self.shaders.switch_shading(ctx);
     }
@@ -78,7 +100,7 @@ impl Object {
         let program = glium::Program::from_source(display, self.shaders.vertex_shader, self.shaders.fragment_shader, None).expect("Error: \"glium::Program::from_source\" Fail");
         let mut frame = display.draw();
         // ------------->Depth Testing Params + Backface culling
-        frame.clear_color_and_depth((0.5, 0.5, 0.5, 1.0), 1.0);
+        frame.clear_color_and_depth(Object::get_color(0x4F, 0x18, 0x1F), 1.0);
         let params = glium::DrawParameters {
             depth: glium::Depth {
                 test: glium::draw_parameters::DepthTest::IfLess,
@@ -86,7 +108,7 @@ impl Object {
                 .. Default::default()
             },
             backface_culling: if ctx.backface {
-                glium::draw_parameters::BackfaceCullingMode::CullClockwise
+                glium::draw_parameters::BackfaceCullingMode::CullCounterClockwise
             } else {
                 glium::draw_parameters::BackfaceCullingMode::CullingDisabled
             },

@@ -53,11 +53,11 @@ impl Faces {
 
 #[derive(Debug)]
 struct ObjParams {
-    pub name: Option<String>,
-    pub mtlpath: Option<String>,
-    pub v: Vec<Vertex>,
-    pub f: Vec<Faces>,
-    pub s: String
+    name: Option<String>,
+    mtlpath: Option<String>,
+    v: Vec<Vertex>,
+    f: Vec<Faces>,
+    s: String
 }
 
 impl ObjParams {

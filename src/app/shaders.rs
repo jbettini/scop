@@ -19,7 +19,7 @@ impl Shader {
                 uniform mat4 perspective_matrix;
 
                 void main() {
-                    v_normal = transpose(inverse(mat3(rotation_matrix))) * normal; 
+                    v_normal = normalize(transpose(inverse(mat3(rotation_matrix))) * normal);
                     v_position = vec3(rotation_matrix * vec4(position, 1.0));
                     gl_Position = perspective_matrix * rotation_matrix * vec4(position, 1.0);
                 }

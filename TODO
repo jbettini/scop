@@ -2,12 +2,21 @@
 Current:
 
 Parsing Obj
+        - Calcul des normals
+        - coherence des valeurs
+                        - Check si un carré a des dupli avant de le trianguliser
+        - parametre s
+        - Hard test
+        (Optionnel)
+                - Ajout de vt
+                - Ajout de vn
+                - Ajout multiobj
 
 
-Triangulisation des carré
+Pasrsing mtl
+       -  Mettre les face dans une stucture materials
 Textures
 Parsing Tga
-Pasrsing mtl
 
 
 

@@ -1,3 +1,16 @@
+use std::collections::HashSet;
+
+pub fn has_duplicate(f: &Vec<u16>) -> bool {
+    let mut tmp:  HashSet<u16> = HashSet::new();
+    for x in f {
+        if tmp.contains(&x) {
+            return true;
+        }
+        tmp.insert(x.clone());
+    }
+    return false;
+}
+
 pub fn print_help() {
     println!("\x1b[1;31m## Available Commands ##\x1b[0m");
     println!("\x1b[32mV\x1b[0m : Change polygon draw mode (fill, line, point)");
