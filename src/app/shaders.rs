@@ -17,11 +17,15 @@ impl Shader {
                 out vec3 v_position; 
                 uniform mat4 rotation_matrix;
                 uniform mat4 perspective_matrix;
+                uniform vec3 object_center;
 
                 void main() {
                     v_normal = normalize(transpose(inverse(mat3(rotation_matrix))) * normal);
                     v_position = vec3(rotation_matrix * vec4(position, 1.0));
-                    gl_Position = perspective_matrix * rotation_matrix * vec4(position, 1.0);
+                    vec3 centered_position = position - object_center;
+                    vec4 rotated_position = rotation_matrix * vec4(centered_position, 1.0);
+                    vec3 final_position = vec3(rotated_position) + object_center;
+                    gl_Position = perspective_matrix * vec4(final_position, 1.0);
                 }
             "#,
             fragment_shader: r#"
@@ -38,13 +42,13 @@ impl Shader {
                 const vec3 specular_color = vec3(1.0, 1.0, 1.0);
 
                 void main() {
-                    float diffuse = max(dot(normalize(v_normal), normalize(light)), 0.0);
+                    float diffuse = max(dot(v_normal, light), 0.0);
 
-                    vec3 camera_dir = normalize(-v_position);
-                    vec3 half_direction = normalize(normalize(light) + camera_dir);
-                    float specular = pow(max(dot(normalize(v_normal), half_direction), 0.0), 16.0);
-
+                    vec3 camera_dir = -v_position;
+                    vec3 half_direction = normalize(light + camera_dir);
+                    float specular = pow(max(dot(v_normal, half_direction), 0.0), 16.0);
                     color = vec4(ambient_color + diffuse * diffuse_color + specular * specular_color, 1.0);
+                    // color = vec4((v_normal + 1.0) / 2.0, 1.0);
                 }
             "#
         }

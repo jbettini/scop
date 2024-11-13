@@ -14,10 +14,6 @@ use glium::{
 use super::{
     ctx::Ctx,
     object::Object,
-    parser::{
-        obj_parser,
-        ObjParams
-    },
     utils
 };
 
@@ -27,7 +23,6 @@ pub struct App {
     pub event_loop: Option<EventLoop<()>>,
     pub form: Option<Object>,
     pub ctx: Ctx,
-    pub obj: ObjParams,
 }
 
 impl App {
@@ -37,8 +32,7 @@ impl App {
             display: None,
             event_loop: Some(EventLoop::new().expect("Error: Fail to init EvemtLoop.")),
             form: None,
-            ctx: Ctx::default(),
-            obj: obj_parser("../../obj/teapot2.obj").unwrap(),
+            ctx: Ctx::new(),
         }
     }
     pub fn init_display(&mut self) {
@@ -46,15 +40,15 @@ impl App {
         let event_loop = self.event_loop.as_ref().expect("EventLoop should be initialized");
         event_loop.set_control_flow(ControlFlow::Poll);
         event_loop.set_control_flow(ControlFlow::Wait);
-        let (_window, display) = glium::backend::glutin::SimpleWindowBuilder::new()
+        let (window, display) = glium::backend::glutin::SimpleWindowBuilder::new()
             .with_inner_size(self.ctx.width, self.ctx.height)
             .with_title("Super Scop :O")
             .build(event_loop);
-        let indices = self.obj.clone().get_indices();
-        let normals = self.obj.clone().get_normals();
-        self.form = Some(Object::new(&display, &self.obj.v[..], &normals[..], &indices[..]));
+        // TODO: move this lines
+        self.form = Some(Object::new(&display, &self.ctx));
+        // ------------------------
         self.display = Some(display);
-        self.window = Some(_window);
+        self.window = Some(window);
     }
     pub fn run(mut self) {
         if let Some(event_loop) = self.event_loop.take() {
@@ -111,22 +105,46 @@ impl ApplicationHandler for App {
                             self.ctx.rotation = !self.ctx.rotation;
                         },
                         KeyCode::KeyA => {
-                            self.ctx.x_factor += 0.05;
+                            if self.ctx.light_move {
+                                self.ctx.light[0] -= 0.25;
+                            } else {
+                                self.ctx.x_factor += 0.1;
+                            }
                         },
                         KeyCode::KeyD => {
-                            self.ctx.x_factor -= 0.05;
+                            if self.ctx.light_move {
+                                self.ctx.light[0] += 0.25;
+                            } else {
+                                self.ctx.x_factor -= 0.1;
+                            }
                         },
                         KeyCode::KeyS => {
-                            self.ctx.z_factor += 0.05;
+                            if self.ctx.light_move {
+                                self.ctx.light[2] -= 0.25;
+                            } else {
+                                self.ctx.z_factor += 0.1;
+                            }
                         },
                         KeyCode::KeyW => {
-                            self.ctx.z_factor -= 0.05;
+                            if self.ctx.light_move {
+                                self.ctx.light[2] += 0.25;
+                            } else {
+                                self.ctx.z_factor -= 0.1;
+                            }
                         },
                         KeyCode::ArrowDown => {
-                            self.ctx.y_factor += 0.05;
+                            if self.ctx.light_move {
+                                self.ctx.light[1] -= 0.25;
+                            } else {
+                                self.ctx.y_factor += 0.1;
+                            }
                         },
                         KeyCode::ArrowUp => {
-                            self.ctx.y_factor -= 0.05;
+                            if self.ctx.light_move {
+                                self.ctx.light[1] += 0.25;
+                            } else {
+                                self.ctx.y_factor -= 0.1;
+                            }
                         },
                         KeyCode::ArrowLeft => {
                             let speed: f32 = self.ctx.speed_factor;
@@ -144,10 +162,13 @@ impl ApplicationHandler for App {
                                 self.ctx.speed_factor = -0.4;
                             }
                         }
-                        KeyCode::KeyL => {
+                        KeyCode::KeyP => {
                             if let Some(form) = &mut self.form {
                                 form.shaders_switch(& mut self.ctx);
                             }                   
+                        },
+                        KeyCode::KeyL => {
+                            self.ctx.light_move = !self.ctx.light_move
                         },
                         KeyCode::KeyB => {
                             self.ctx.backface = !self.ctx.backface;

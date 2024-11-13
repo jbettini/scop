@@ -2,19 +2,19 @@
 Current:
 
 Parsing Obj
-        - Calcul des normals
+        - Fix les normals et ajouter les indices etc dans la structure mesh
         - coherence des valeurs
-                        - Check si un carré a des dupli avant de le trianguliser
+                        - Check si un carré a des vtx en double avant de le trianguliser
+                        - Check si les vertex on eté declare plusieur fois
         - parametre s
-        - Hard test
-        (Optionnel)
+        - Parsing
+                - Hard test parsing
                 - Ajout de vt
                 - Ajout de vn
-                - Ajout multiobj
-
-
-Pasrsing mtl
-       -  Mettre les face dans une stucture materials
+                - Ajout de mtl
+        - Ajouter le drag and drop
+        - Pasrsing mtl
+                -  Mettre les faces dans une stucture material
 Textures
 Parsing Tga
 
@@ -23,7 +23,7 @@ Parsing Tga
 BONUS 
 
 
--   Drag and drop       // Besoin du parsing des obj
+-   Drag and drop       // Besoin du parsing des objs et des textures
 -   Hot reload          // Besoin du parsing des mtl
 -   Camera libre
 -   Multiple commande                                                   Total 6/6
@@ -39,7 +39,7 @@ Touche:
 
 V : Changer le draw polygone mode (fill, line, point)
 B : Active ou desactive le backface culling
-L : switch entre gouraud et blin phong shading
+M : switch entre gouraud et blin phong shading
 Z : Avance en Z
 S : Recule en Z
 Q : Deplace vers la gauche

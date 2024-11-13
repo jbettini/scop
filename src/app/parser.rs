@@ -24,9 +24,12 @@ impl Faces {
 pub struct ObjParams {
     pub name: Option<String>,
     pub mtlpath: Option<String>,
+    pub vn: Option<Vec<Normal>>,
+    pub vt: Option<Vec<Vertex>>,
     pub v: Vec<Vertex>,
     pub f: Vec<Faces>,
-    pub s: String
+    pub s: String,
+    pub centroid: [f32; 3]
 }
 
 impl ObjParams {
@@ -40,9 +43,13 @@ impl ObjParams {
                 v
             },
             f: Vec::new(),
-            s: "off".to_string()
+            s: "off".to_string(),
+            centroid: [0.0, 0.0, 0.0],
+            vt: None,
+            vn: None
         }
     }
+    
     pub fn get_indices(self) -> Vec<u16> {
         let mut ret: Vec<u16> = Vec::new();
         for face in self.f {
@@ -52,6 +59,7 @@ impl ObjParams {
         }
         return ret;
     }
+
     pub fn get_normals(&self) -> Vec<Normal> {
         let mut vertex_normals: Vec<Normal> = vec![Normal::new(0.0, 0.0, 0.0); self.v.len()];
         for face in &self.f {
@@ -67,18 +75,35 @@ impl ObjParams {
                 (u.2 * v.0) - (u.0 * v.2),
                 (u.0 * v.1) - (u.1 * v.0)
             );
-            println!("x: {}, y: {}, z: {}", (u.1 * v.2) - (u.2 * v.1),(u.2 * v.0) - (u.0 * v.2),(u.0 * v.1) - (u.1 * v.0));
-
             for &index in &face.f {
                 let vertex_normal = &mut vertex_normals[index as usize];
-                *vertex_normal = Normal::new(
-                    vertex_normal.normal.0 + normal.normal.0,
-                    vertex_normal.normal.1 + normal.normal.1,
-                    vertex_normal.normal.2 + normal.normal.2,
-                );
+                vertex_normal.normal.0 += normal.normal.0;
+                vertex_normal.normal.1 += normal.normal.1;
+                vertex_normal.normal.2 += normal.normal.2;
             }
         }
-        return vertex_normals;
+        for normal in &mut vertex_normals {
+            let length = (normal.normal.0.powi(2) + normal.normal.1.powi(2) + normal.normal.2.powi(2)).sqrt();
+            if length > 0.0 {
+                normal.normal.0 /= length;
+                normal.normal.1 /= length;
+                normal.normal.2 /= length;
+            }
+        }
+        vertex_normals
+    }
+
+    fn init_centroid(& mut self) {
+        let len: f32 = self.v.len() as f32;
+        let mut x: f32 = 0.0;
+        let mut y: f32 = 0.0;
+        let mut z: f32 = 0.0;
+        for vtx in self.v.clone() {
+            x += vtx.position.0;
+            y += vtx.position.1;
+            z += vtx.position.2;
+        }
+        self.centroid = [x / len, y / len, z / len];
     }
 }
 
@@ -98,7 +123,11 @@ impl Default for ObjParams {
 
 
 fn get_file_lines(filepath: &str) -> Vec<String> {
-    let mut lines: Vec<String>  = read_to_string(filepath).expect(format!("Error: Cannot Open {}\n.", filepath).as_str()).lines().map(String::from).collect();
+    let mut lines: Vec<String>  = read_to_string(filepath).expect(format!("Error: Cannot Open {}\n.", filepath)
+                                                            .as_str())
+                                                            .lines()
+                                                            .map(String::from)
+                                                            .collect();
     lines.retain(|s| !s.starts_with('#'));
     return lines;
 }
@@ -140,7 +169,7 @@ fn get_face(face: &[&str; 3]) -> Result<Vec<u16>, String> {
                 continue;
             },
             Err(_) => {
-                return Err(format!("Error: Invalid face {}, faces must be i64.", s));
+                return Err(format!("Error: Invalid face {}, faces must be i16.", s));
             }
         }
     }
@@ -218,7 +247,13 @@ pub fn obj_parser(filepath: &str) -> Result<ObjParams, String> {
                     }
                 },
                 "s" => {
-                    //TODO: Implementer s
+                    //TODO: Implementation
+                },
+                "vn" => {
+
+                },
+                "vt" => {
+
                 }
                 _ => return Err(format!("Error: Invalid Token {}.", key)),
             }
@@ -227,7 +262,10 @@ pub fn obj_parser(filepath: &str) -> Result<ObjParams, String> {
         }
     }
     match check_coherence(&obj) {
-        Ok(_) => Ok(obj),
+        Ok(_) => {
+            obj.init_centroid();
+            Ok(obj)
+        }
         Err(e) => Err(e),
     }
 }

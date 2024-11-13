@@ -1,3 +1,8 @@
+use super::parser::{
+    obj_parser,
+    ObjParams
+};
+
 pub struct Ctx {
     pub width: u32,
     pub height: u32,
@@ -9,9 +14,10 @@ pub struct Ctx {
     pub shading: bool,
     pub backface: bool,
     pub polmode: bool,
-    pub speed_factor: f32
-    // pub x_rotation: [bool; 2],
-    // pub y_rotation: [bool; 2]
+    pub speed_factor: f32,
+    pub mesh: ObjParams,
+    pub light_move: bool,
+    pub light: [f32; 3]
 }
 
 impl Ctx {
@@ -22,14 +28,15 @@ impl Ctx {
             rotation: true,
             x_factor: 0.0,
             y_factor: 0.0,
-            z_factor: 2.5,
+            z_factor: 8.0,
             rot_speed: 0.0,
             shading: true,
             backface: true,
             polmode: true,
-            speed_factor: 0.015
-            // x_rotation: [true, false],
-            // y_rotation: [false, false]
+            speed_factor: 0.015,
+            mesh: obj_parser("./obj/teapot2.obj").unwrap(),
+            light: [0.5, 1.0, -0.5],
+            light_move: true
         }
     }
 }

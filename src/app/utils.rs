@@ -15,7 +15,8 @@ pub fn print_help() {
     println!("\x1b[1;31m## Available Commands ##\x1b[0m");
     println!("\x1b[32mV\x1b[0m : Change polygon draw mode (fill, line, point)");
     println!("\x1b[32mB\x1b[0m : Toggle backface culling");
-    println!("\x1b[32mL\x1b[0m : Switch between Gouraud and Blinn-Phong shading");
+    println!("\x1b[32mM\x1b[0m : Switch between Gouraud or Blinn-Phong shading");
+    println!("\x1b[32mL\x1b[0m : Switch between moving fov or light.");
     println!("\x1b[32mZ\x1b[0m : Move forward in Z");
     println!("\x1b[32mS\x1b[0m : Move backward in Z");
     println!("\x1b[32mQ\x1b[0m : Move left");
