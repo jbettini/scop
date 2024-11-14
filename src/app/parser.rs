@@ -24,8 +24,8 @@ impl Faces {
 pub struct ObjParams {
     pub name: Option<String>,
     pub mtlpath: Option<String>,
-    pub vn: Option<Vec<Normal>>,
-    pub vt: Option<Vec<Vertex>>,
+    // pub vn: Option<Vec<Normal>>,
+    // pub vt: Option<Vec<Vertex>>,a
     pub v: Vec<Vertex>,
     pub f: Vec<Faces>,
     pub s: String,
@@ -45,8 +45,8 @@ impl ObjParams {
             f: Vec::new(),
             s: "off".to_string(),
             centroid: [0.0, 0.0, 0.0],
-            vt: None,
-            vn: None
+            // vt: None,
+            // vn: None
         }
     }
     
@@ -90,7 +90,7 @@ impl ObjParams {
                 normal.normal.2 /= length;
             }
         }
-        vertex_normals
+        return vertex_normals;
     }
 
     fn init_centroid(& mut self) {
@@ -285,3 +285,4 @@ pub fn obj_parser(filepath: &str) -> Result<ObjParams, String> {
 // fn main() {
 //     parsing_handler("../obj/42.obj");
 // }
+zrfoiuhzefiuzejfzejf
