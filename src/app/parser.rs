@@ -22,13 +22,13 @@ impl Faces {
 }
 #[derive(Clone, Debug)]
 pub struct ObjParams {
+    pub s: String,
     pub name: Option<String>,
     pub mtlpath: Option<String>,
-    // pub vn: Option<Vec<Normal>>,
-    // pub vt: Option<Vec<Vertex>>,a
-    pub v: Vec<Vertex>,
-    pub f: Vec<Faces>,
-    pub s: String,
+    pub vertexs: Vec<Vertex>,
+    pub faces: Vec<Faces>,
+    pub indices: Vec<u16>,
+    pub faces_normals: Vec<Normal>,
     pub centroid: [f32; 3]
 }
 
@@ -37,68 +37,88 @@ impl ObjParams {
         Self {
             name: None,
             mtlpath: None,
-            v: {
+            vertexs: {
                 let mut v = Vec::new();
-                v.push(Vertex::from_vec(&[0.0, 0.0, 0.0]).unwrap());
+                v.push(Vertex::new(0.0, 0.0, 0.0));
                 v
             },
-            f: Vec::new(),
             s: "off".to_string(),
+            indices: Vec::new(),
+            faces: Vec::new(),
+            faces_normals: Vec::new(),
             centroid: [0.0, 0.0, 0.0],
             // vt: None,
             // vn: None
         }
     }
     
-    pub fn get_indices(self) -> Vec<u16> {
+    pub fn init_indices(& mut self) {
         let mut ret: Vec<u16> = Vec::new();
-        for face in self.f {
-            for x in face.f {
-                ret.push(x);
+        for face in &self.faces {
+            for x in &face.f {
+                ret.push(*x);
             }
         }
-        return ret;
+        self.indices = ret;
     }
 
-    pub fn get_normals(&self) -> Vec<Normal> {
-        let mut vertex_normals: Vec<Normal> = vec![Normal::new(0.0, 0.0, 0.0); self.v.len()];
-        for face in &self.f {
+    pub fn cross_product(&self, u: (f32, f32, f32), v: (f32, f32, f32)) -> Normal {
+        Normal::new(
+            u.1 * v.2 - u.2 * v.1,
+            u.2 * v.0 - u.0 * v.2,
+            u.0 * v.1 - u.1 * v.0
+        )
+    }
+
+    pub fn calc_face_normal(&self, a: Vertex, b: Vertex, c: Vertex) -> Normal {
+        let pos_a = a.position;
+        let pos_b = b.position;
+        let pos_c = c.position;
+        let u = (
+                pos_b.0 - pos_a.0,
+                pos_b.1 - pos_a.1, 
+                pos_b.2 - pos_a.2
+            );
+        let v = (
+                pos_c.0 - pos_a.0, 
+                pos_c.1 - pos_a.1, 
+                pos_c.2 - pos_a.2
+            );
+        self.cross_product(u, v)
+    }
+
+
+    pub fn init_faces_normals(& mut self) {
+        let mut faces_normals: Vec<Normal> = vec![Normal::new(0.0, 0.0, 0.0)];
+        for face in &self.faces {
             let (a, b, c) = (
-                self.v[face.f[0] as usize].position,
-                self.v[face.f[1] as usize].position,
-                self.v[face.f[2] as usize].position
+                self.vertexs[face.f[0] as usize],
+                self.vertexs[face.f[1] as usize],
+                self.vertexs[face.f[2] as usize]
             );
-            let u = (b.0 - a.0, b.1 - a.1, b.2 - a.2);
-            let v = (c.0 - a.0, c.1 - a.1, c.2 - a.2);
-            let normal = Normal::new(
-                (u.1 * v.2) - (u.2 * v.1),
-                (u.2 * v.0) - (u.0 * v.2),
-                (u.0 * v.1) - (u.1 * v.0)
-            );
-            for &index in &face.f {
-                let vertex_normal = &mut vertex_normals[index as usize];
-                vertex_normal.normal.0 += normal.normal.0;
-                vertex_normal.normal.1 += normal.normal.1;
-                vertex_normal.normal.2 += normal.normal.2;
-            }
+            faces_normals.push(self.calc_face_normal(a, b, c));
         }
-        for normal in &mut vertex_normals {
-            let length = (normal.normal.0.powi(2) + normal.normal.1.powi(2) + normal.normal.2.powi(2)).sqrt();
-            if length > 0.0 {
-                normal.normal.0 /= length;
-                normal.normal.1 /= length;
-                normal.normal.2 /= length;
-            }
-        }
-        return vertex_normals;
+        self.faces_normals = faces_normals;
+    }
+
+    // pub fn init_vertex_normals(&self) -> Vec<Normal> {
+    //     let mut vertex_normals: Vec<Normal> = vec![Normal::new(0.0, 0.0, 0.0); self.vertexs.len()];
+        
+    //     return self.get_faces_normals();
+    // }
+
+    fn init_obj(& mut self) {
+        self.init_centroid();
+        self.init_indices();
+        self.init_faces_normals();
     }
 
     fn init_centroid(& mut self) {
-        let len: f32 = self.v.len() as f32;
+        let len: f32 = self.vertexs.len() as f32;
         let mut x: f32 = 0.0;
         let mut y: f32 = 0.0;
         let mut z: f32 = 0.0;
-        for vtx in self.v.clone() {
+        for vtx in self.vertexs.clone() {
             x += vtx.position.0;
             y += vtx.position.1;
             z += vtx.position.2;
@@ -113,23 +133,15 @@ impl Default for ObjParams {
     }
 }
 
-// fn mtl_parser(_filepath: &str) {
-//     return 
-// }
-
-// fn tga_parser(_filepath: &str) {
-//     return 
-// }
-
-
-fn get_file_lines(filepath: &str) -> Vec<String> {
-    let mut lines: Vec<String>  = read_to_string(filepath).expect(format!("Error: Cannot Open {}\n.", filepath)
-                                                            .as_str())
-                                                            .lines()
-                                                            .map(String::from)
-                                                            .collect();
+fn get_file_lines(filepath: &str) -> Result<Vec<String>, String> {
+    let content = read_to_string(filepath).map_err(|e| format!("Error: Cannot open {}. {}", filepath, e))?;
+    let mut lines: Vec<String> = content
+        .lines()
+        .map(String::from)
+        .collect();
+    
     lines.retain(|s| !s.starts_with('#'));
-    return lines;
+    Ok(lines)
 }
 
 fn check_line(splited: &Vec<&str>, name: &str) -> Result<(), String> {
@@ -143,20 +155,20 @@ fn check_line(splited: &Vec<&str>, name: &str) -> Result<(), String> {
 }
 
 fn get_vertex(face: &[&str; 3]) -> Result<Vertex, String> {
-    let mut ret: Vec<f64> = Vec::new();
+    let mut ret: Vec<f32> = Vec::new();
     for s in face {
-        let test = s.parse::<f64>();
+        let test = s.parse::<f32>();
         match test {
             Ok(ok) => {
                 ret.push(ok);
                 continue;
             },
             Err(_) => {
-                return Err(format!("Error: Invalid vertex {}, vertex must be f64.", s));
+                return Err(format!("Error: Invalid vertex {}, vertex must be f32.", s));
             }
         }
     }
-    Vertex::from_vec(&ret).map_err(|e| e.to_string())
+    Ok(Vertex::new(ret[0], ret[1], ret[2]))
 }
 
 fn get_face(face: &[&str; 3]) -> Result<Vec<u16>, String> {
@@ -189,23 +201,27 @@ fn get_parent_path(path: &str) -> Result<&str, &str> {
 }
 
 fn check_coherence(parsed_obj: &ObjParams) -> Result<(), String> {
-    let len: u16 = parsed_obj.v.len() as u16;
-    for face in &parsed_obj.f {
-        for point in &face.f {
-            if *point <= 0 || *point > len {
-                return Err(format!("Error: A face is out of the vertex range: {}/{}t.", point, len));
+    let len: u16 = parsed_obj.vertexs.len() as u16;
+    if len <= 0 {
+        return Err(format!("Error: No vertexs."));
+    } else {
+        for face in &parsed_obj.faces {
+            for point in &face.f {
+                if *point <= 0 || *point > len {
+                    return Err(format!("Error: A face is out of the vertex range: {}/{}t.", point, len));
+                }
+            }
+            if has_duplicate(&face.f) {
+                return Err(format!("Error: A face contain duplicate vertex."));
             }
         }
-        if has_duplicate(&face.f) {
-            return Err(format!("Error: A face contain duplicate vertex."));
-        }
+        Ok(())
     }
-    Ok(())
 }
 
 pub fn obj_parser(filepath: &str) -> Result<ObjParams, String> {
     let mut current_material = "off".to_string();
-    let lines = get_file_lines(filepath);
+    let lines = get_file_lines(filepath)?;
     let mut obj: ObjParams = ObjParams::new();
     for line in lines {
         if let Some((key, rest)) = line.split_once(' ') {
@@ -235,15 +251,15 @@ pub fn obj_parser(filepath: &str) -> Result<ObjParams, String> {
                 "v" => {
                     check_line(&splited, "v")?;
                     let v1 = get_vertex(&[splited[0], splited[1], splited[2]])?;
-                    obj.v.push(v1);
+                    obj.vertexs.push(v1);
                 },
                 "f" => {
                     check_line(&splited, "f")?;
                     let t1 = get_face(&[splited[0], splited[1], splited[2]])?;
-                    obj.f.push(Faces::new(t1, current_material.clone()));
+                    obj.faces.push(Faces::new(t1, current_material.clone()));
                     if splited.len() == 4 {
                         let t2 = get_face(&[splited[0], splited[2], splited[3]])?;
-                        obj.f.push(Faces::new(t2, current_material.clone()));
+                        obj.faces.push(Faces::new(t2, current_material.clone()));
                     }
                 },
                 "s" => {
@@ -263,7 +279,7 @@ pub fn obj_parser(filepath: &str) -> Result<ObjParams, String> {
     }
     match check_coherence(&obj) {
         Ok(_) => {
-            obj.init_centroid();
+            obj.init_obj();
             Ok(obj)
         }
         Err(e) => Err(e),
@@ -285,4 +301,3 @@ pub fn obj_parser(filepath: &str) -> Result<ObjParams, String> {
 // fn main() {
 //     parsing_handler("../obj/42.obj");
 // }
-zrfoiuhzefiuzejfzejf

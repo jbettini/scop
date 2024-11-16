@@ -38,15 +38,13 @@ pub struct Vertex {
 glium::implement_vertex!(Vertex, position);
 
 impl Vertex {
-    // pub fn cros_product(&self) -> 
-    pub fn from_vec(vec: &[f64]) -> Result<Self, &'static str> {
-        if vec.len() != 3 {
-            return Err("Error: Invalid argument: Vertex::from_vec requires exactly 3 elements.");
+    pub fn new(i: f32, j: f32, k: f32) -> Self {
+        Self {
+            position: (i, j, k)
         }
-        Ok(Self {
-            position: (vec[0] as f32, vec[1] as f32, vec[2] as f32),
-        })
     }
+    // pub fn cros_product(&self) -> 
+
 }
 
 
@@ -66,14 +64,14 @@ impl Object {
     ) -> Self {
         Self {
             // texture: None,
-            position: glium::VertexBuffer::new(display, &ctx.mesh.v)
+            position: glium::VertexBuffer::new(display, &ctx.mesh.vertexs)
                         .expect("Failed to create position buffer"),
-            normal: glium::VertexBuffer::new(display, &ctx.mesh.get_normals())
+            normal: glium::VertexBuffer::new(display, &ctx.mesh.faces_normals)
                         .expect("Failed to create normal buffer"),
             indice: glium::IndexBuffer::new(
                 display,
                 glium::index::PrimitiveType::TrianglesList,
-                &ctx.mesh.clone().get_indices(),
+                &ctx.mesh.indices,
             ).expect("Failed to create index buffer"),
             shaders: Shader::default()
         }

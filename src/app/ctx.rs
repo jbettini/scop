@@ -34,7 +34,16 @@ impl Ctx {
             backface: true,
             polmode: true,
             speed_factor: 0.015,
-            mesh: obj_parser("./obj/teapot2.obj").unwrap(),
+            mesh: {
+                let obj_ret = obj_parser("./obj/teapot2.obj");
+                match obj_ret {
+                    Ok(obj) => obj,
+                    Err(err) => {
+                        println!("{:?}", err);
+                        std::process::exit(1);
+                    }
+                }
+            },
             light: [0.5, 1.0, -0.5],
             light_move: true
         }
