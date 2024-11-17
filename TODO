@@ -24,8 +24,6 @@ BONUS
 
 
 -   Drag and drop       // Besoin du parsing des objs et des textures
--   Hot reload          // Besoin du parsing des mtl
--   Camera libre
 -   Multiple commande                                                   Total 6/6
         Different type de lumiere                                       Ok
         Stoper la rotation                                              Ok

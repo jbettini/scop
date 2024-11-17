@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 
+
 pub fn has_duplicate(f: &Vec<u16>) -> bool {
     let mut tmp:  HashSet<u16> = HashSet::new();
     for x in f {

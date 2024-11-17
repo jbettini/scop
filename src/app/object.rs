@@ -12,7 +12,7 @@ use glium::{
 use super::{
     ctx::Ctx,
     matrix::Matrix,
-    shaders::Shader
+    shaders::Shader,
 };
 
 
@@ -43,38 +43,67 @@ impl Vertex {
             position: (i, j, k)
         }
     }
-    // pub fn cros_product(&self) -> 
-
 }
 
 
 pub struct Object {
-    // pub texture: Option<Texture2d>,
-    pub indice: IndexBuffer<u16>,
-    pub normal: VertexBuffer<Normal>,
-    pub position: VertexBuffer<Vertex>,
-    pub shaders: Shader
+    indice: glium::IndexBuffer<u16>,
+    normal: glium::VertexBuffer<Normal>,
+    position: glium::VertexBuffer<Vertex>,
+    shaders: Shader,
+    normal_lines_position: glium::VertexBuffer<Vertex>,
+    normal_lines_indice: glium::IndexBuffer<u16>,
 
 }
 
 impl Object {
-    pub fn new(
-        display: &Display<WindowSurface>,
-        ctx: &Ctx
-    ) -> Self {
+    // pub fn new(
+    //     display: &Display<WindowSurface>,
+    //     ctx: &Ctx
+    // ) -> Self {
+    //     Self {
+    //         // // texture: None,
+    //         position: glium::VertexBuffer::new(display, &ctx.mesh.vertexs)
+    //             .expect("Failed to create position buffer"),
+    //         normal: glium::VertexBuffer::new(display, &ctx.mesh.vertex_normals)
+    //             .expect("Failed to create normal buffer"),
+    //         indice: glium::IndexBuffer::new(
+    //             display,
+    //             glium::index::PrimitiveType::TrianglesList,
+    //             &ctx.mesh.indices,
+    //         ).expect("Failed to create index buffer"),
+    //         shaders: Shader::default()
+    //     }
+    // }
+    //// TODO delete this
+    pub fn new(display: &Display<WindowSurface>, ctx: &Ctx) -> Self {
+        let (normal_lines_vertices, normal_lines_indices) = ctx.mesh.generate_normal_lines(0.1);
+        
         Self {
-            // texture: None,
             position: glium::VertexBuffer::new(display, &ctx.mesh.vertexs)
-                        .expect("Failed to create position buffer"),
-            normal: glium::VertexBuffer::new(display, &ctx.mesh.faces_normals)
-                        .expect("Failed to create normal buffer"),
+                .expect("Failed to create position buffer"),
+            normal: glium::VertexBuffer::new(display, &ctx.mesh.vertex_normals)
+                .expect("Failed to create normal buffer"),
             indice: glium::IndexBuffer::new(
                 display,
                 glium::index::PrimitiveType::TrianglesList,
                 &ctx.mesh.indices,
             ).expect("Failed to create index buffer"),
-            shaders: Shader::default()
+            normal_lines_position: glium::VertexBuffer::new(display, &normal_lines_vertices)
+                .expect("Failed to create normal lines position buffer"),
+            normal_lines_indice: glium::IndexBuffer::new(
+                display,
+                glium::index::PrimitiveType::LinesList,
+                &normal_lines_indices,
+            ).expect("Failed to create normal lines index buffer"),
+            shaders: Shader::default(),
         }
+    }
+    fn create_normal_buffers(&self, display: &Display<WindowSurface>, ctx: &Ctx) -> (glium::VertexBuffer<Vertex>, glium::IndexBuffer<u16>) {
+        let (normal_vertices, normal_indices) = ctx.mesh.generate_normal_lines(0.1); // 0.1 est la longueur des normales
+        let normal_vbo = glium::VertexBuffer::new(display, &normal_vertices).unwrap();
+        let normal_ibo = glium::IndexBuffer::new(display, glium::index::PrimitiveType::LinesList, &normal_indices).unwrap();
+        (normal_vbo, normal_ibo)
     }
 
     pub fn get_color(r: u8, g: u8, b: u8) -> (f32, f32, f32, f32) {
@@ -83,22 +112,27 @@ impl Object {
     pub fn shaders_switch(&mut self, ctx: &mut Ctx) {
         self.shaders.switch_shading(ctx);
     }
-    pub fn draw_obj(&mut self, display: &Display<WindowSurface>, ctx: & mut Ctx) {
-        if ctx.rotation == true {
+    pub fn draw_obj(&mut self, display: &Display<WindowSurface>, ctx: &mut Ctx) {
+        if ctx.rotation {
             ctx.rot_speed += ctx.speed_factor;
         }
+    
+        let rotation_matrix = Matrix::new_rotation(ctx).get_4x4_matrix();
+        let perspective_matrix = Matrix::new_perspective(ctx).get_4x4_matrix();
+    
         let uniforms = uniform! {
-            rotation_matrix: Matrix::new_rotation(ctx).get_4x4_matrix(),
-            perspective_matrix: Matrix::new_perspective(ctx).get_4x4_matrix(),
+            rotation_matrix: rotation_matrix,
+            perspective_matrix: perspective_matrix,
             object_center: ctx.mesh.centroid,
             light: ctx.light
         };
+    
         let program = glium::Program::from_source(display, self.shaders.vertex_shader, self.shaders.fragment_shader, None)
-                                        .expect("Error: \"glium::Program::from_source\" Fail");
+            .expect("Error: \"glium::Program::from_source\" Fail");
+    
         let mut frame = display.draw();
         frame.clear_color_and_depth(Object::get_color(0x02, 0x02, 0x02), 1.0);
-        // -------------> Depth Testing + WireFrame + BackFaceCulling
-
+    
         let params = glium::DrawParameters {
             depth: glium::Depth {
                 test: glium::draw_parameters::DepthTest::IfLess,
@@ -110,15 +144,84 @@ impl Object {
             } else {
                 glium::draw_parameters::BackfaceCullingMode::CullingDisabled
             },
-            polygon_mode: if !ctx.polmode {
+            polygon_mode: if ctx.polmode == 0 {
+                glium::draw_parameters::PolygonMode::Fill
+            } else if  ctx.polmode == 1 {
                 glium::draw_parameters::PolygonMode::Line
             } else {
-                glium::draw_parameters::PolygonMode::Fill
+                glium::draw_parameters::PolygonMode::Point
             },
             .. Default::default()
         };
-        // -------------> Depth Testing + WireFrame + BackFaceCulling
-        frame.draw((&self.position, &self.normal), &self.indice, &program, &uniforms, &params).unwrap();        
+    
+        // Dessin de l'objet principal
+        frame.draw((&self.position, &self.normal), &self.indice, &program, &uniforms, &params).unwrap();
+    
+        // Dessin des normales si activé
+        if ctx.show_normals {
+            let (normal_vbo, normal_ibo) = self.create_normal_buffers(display, ctx);
+            let normal_program = glium::Program::from_source(display, 
+                self.shaders.normal_vertex_shader, 
+                self.shaders.normal_fragment_shader, 
+                None).unwrap();
+    
+            let normal_uniforms = uniform! {
+                rotation_matrix: rotation_matrix,
+                perspective_matrix: perspective_matrix,
+                object_center: ctx.mesh.centroid,
+                normal_length: 0.1f32,
+            };
+    
+            let normal_params = glium::DrawParameters {
+                depth: glium::Depth {
+                    test: glium::draw_parameters::DepthTest::IfLess,
+                    write: true,
+                    .. Default::default()
+                },
+                .. Default::default()
+            };
+    
+            frame.draw(&normal_vbo, &normal_ibo, &normal_program, &normal_uniforms, &normal_params).unwrap();
+        }
+    
         frame.finish().unwrap();
     }
+    // pub fn draw_obj(&mut self, display: &Display<WindowSurface>, ctx: & mut Ctx) {
+    //     if ctx.rotation == true {
+    //         ctx.rot_speed += ctx.speed_factor;
+    //     }
+    //     let uniforms = uniform! {
+    //         rotation_matrix: Matrix::new_rotation(ctx).get_4x4_matrix(),
+    //         perspective_matrix: Matrix::new_perspective(ctx).get_4x4_matrix(),
+    //         object_center: ctx.mesh.centroid,
+    //         light: ctx.light
+    //     };
+    //     let program = glium::Program::from_source(display, self.shaders.vertex_shader, self.shaders.fragment_shader, None)
+    //                                     .expect("Error: \"glium::Program::from_source\" Fail");
+    //     let mut frame = display.draw();
+    //     frame.clear_color_and_depth(Object::get_color(0x02, 0x02, 0x02), 1.0);
+    //     // -------------> Depth Testing + WireFrame + BackFaceCulling
+
+    //     let params = glium::DrawParameters {
+    //         depth: glium::Depth {
+    //             test: glium::draw_parameters::DepthTest::IfLess,
+    //             write: true,
+    //             .. Default::default()
+    //         },
+    //         backface_culling: if ctx.backface {
+    //             glium::draw_parameters::BackfaceCullingMode::CullCounterClockwise
+    //         } else {
+    //             glium::draw_parameters::BackfaceCullingMode::CullingDisabled
+    //         },
+    //         polygon_mode: if !ctx.polmode {
+    //             glium::draw_parameters::PolygonMode::Line
+    //         } else {
+    //             glium::draw_parameters::PolygonMode::Fill
+    //         },
+    //         .. Default::default()
+    //     };
+    //     // -------------> Depth Testing + WireFrame + BackFaceCulling
+    //     frame.draw((&self.position, &self.normal), &self.indice, &program, &uniforms, &params).unwrap();        
+    //     frame.finish().unwrap();
+    // }
 }

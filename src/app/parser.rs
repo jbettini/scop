@@ -1,5 +1,6 @@
 use std::fs::read_to_string;
 
+
 use super::{
     object::Vertex,
     utils::has_duplicate,
@@ -26,10 +27,11 @@ pub struct ObjParams {
     pub name: Option<String>,
     pub mtlpath: Option<String>,
     pub vertexs: Vec<Vertex>,
-    pub faces: Vec<Faces>,
     pub indices: Vec<u16>,
     pub faces_normals: Vec<Normal>,
-    pub centroid: [f32; 3]
+    pub vertex_normals: Vec<Normal>,
+    pub centroid: [f32; 3],
+    faces: Vec<Faces>
 }
 
 impl ObjParams {
@@ -46,11 +48,36 @@ impl ObjParams {
             indices: Vec::new(),
             faces: Vec::new(),
             faces_normals: Vec::new(),
+            vertex_normals: Vec::new(),
             centroid: [0.0, 0.0, 0.0],
             // vt: None,
             // vn: None
         }
     }
+
+    pub fn generate_normal_lines(&self, length: f32) -> (Vec<Vertex>, Vec<u16>) {
+        let mut line_vertices = Vec::new();
+        let mut line_indices = Vec::new();
+        let mut index = 0;
+
+        for (vertex, normal) in self.vertexs.iter().zip(self.vertex_normals.iter()) {
+            line_vertices.push(Vertex { position: vertex.position });
+            
+            let end = (
+                vertex.position.0 + normal.normal.0 * length,
+                vertex.position.1 + normal.normal.1 * length,
+                vertex.position.2 + normal.normal.2 * length,
+            );
+            line_vertices.push(Vertex { position: end });
+
+            line_indices.push(index as u16);
+            line_indices.push((index + 1) as u16);
+            index += 2;
+        }
+
+        (line_vertices, line_indices)
+    }
+
     
     pub fn init_indices(& mut self) {
         let mut ret: Vec<u16> = Vec::new();
@@ -60,6 +87,7 @@ impl ObjParams {
             }
         }
         self.indices = ret;
+        // println!("Indices : \n{:?}", self.indices);
     }
 
     pub fn cross_product(&self, u: (f32, f32, f32), v: (f32, f32, f32)) -> Normal {
@@ -87,7 +115,6 @@ impl ObjParams {
         self.cross_product(u, v)
     }
 
-
     pub fn init_faces_normals(& mut self) {
         let mut faces_normals: Vec<Normal> = vec![Normal::new(0.0, 0.0, 0.0)];
         for face in &self.faces {
@@ -101,16 +128,30 @@ impl ObjParams {
         self.faces_normals = faces_normals;
     }
 
-    // pub fn init_vertex_normals(&self) -> Vec<Normal> {
-    //     let mut vertex_normals: Vec<Normal> = vec![Normal::new(0.0, 0.0, 0.0); self.vertexs.len()];
-        
-    //     return self.get_faces_normals();
-    // }
+    pub fn init_vertex_normals(&mut self) {
+        let mut vertex_normals = vec![Normal { normal: (0.0, 0.0, 0.0) }; self.vertexs.len()];
+        for (face_index, face) in self.faces.iter().enumerate() {
+            let face_normal = &self.faces_normals[face_index + 1];
+            for vertex_index in &face.f {
+                vertex_normals[*vertex_index as usize].normal.0 += face_normal.normal.0;
+                vertex_normals[*vertex_index as usize].normal.1 += face_normal.normal.1;
+                vertex_normals[*vertex_index as usize].normal.2 += face_normal.normal.2;
+            }
+        }
+        for normal in &mut vertex_normals {
+            let length = (normal.normal.0 * normal.normal.0 + normal.normal.1 * normal.normal.1 + normal.normal.2 * normal.normal.2).sqrt();
+            normal.normal.0 /= length;
+            normal.normal.1 /= length;
+            normal.normal.2 /= length;
+        }
+        self.vertex_normals = vertex_normals;
+    }
 
     fn init_obj(& mut self) {
         self.init_centroid();
         self.init_indices();
         self.init_faces_normals();
+        self.init_vertex_normals();
     }
 
     fn init_centroid(& mut self) {

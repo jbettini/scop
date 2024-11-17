@@ -156,8 +156,15 @@ impl ApplicationHandler for App {
                             self.ctx.backface = !self.ctx.backface;
                         }
                         KeyCode::KeyV => {
-                            self.ctx.polmode = !self.ctx.polmode;
-                        }
+                            if self.ctx.polmode == 2 {
+                                self.ctx.polmode = 0;
+                            } else {
+                                self.ctx.polmode += 1;
+                            }
+                        },
+                        KeyCode::KeyN => {
+                            self.ctx.show_normals = !self.ctx.show_normals;
+                        },
                         KeyCode::KeyH => {
                             utils::print_help();
                         }
