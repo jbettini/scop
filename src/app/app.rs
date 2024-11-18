@@ -106,14 +106,14 @@ impl ApplicationHandler for App {
                             if self.ctx.light_move {
                                 self.ctx.light[2] -= 0.25;
                             } else {
-                                self.ctx.z_factor += 0.1;
+                                self.ctx.z_factor += 0.5;
                             }
                         },
                         KeyCode::KeyW => {
                             if self.ctx.light_move {
                                 self.ctx.light[2] += 0.25;
                             } else {
-                                self.ctx.z_factor -= 0.1;
+                                self.ctx.z_factor -= 0.5;
                             }
                         },
                         KeyCode::ArrowDown => {

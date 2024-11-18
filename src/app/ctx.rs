@@ -1,5 +1,3 @@
-use glium::texture::integral_cubemap;
-
 use super::parser::{
     obj_parser,
     ObjParams
@@ -38,7 +36,7 @@ impl Ctx {
             polmode: 0,
             speed_factor: 0.015,
             mesh: {
-                let obj_ret = obj_parser("./obj/teapot2.obj");
+                let obj_ret = obj_parser("./obj/rust.obj");
                 match obj_ret {
                     Ok(obj) => obj,
                     Err(err) => {
@@ -47,9 +45,9 @@ impl Ctx {
                     }
                 }
             },
-            light: [0.0, 0.0, 1.0],
+            light: [0.0, 0.0, -0.5],
             light_move: false,
-            show_normals: true
+            show_normals: false
         }
     }
 }

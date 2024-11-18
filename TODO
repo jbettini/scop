@@ -2,7 +2,6 @@
 Current:
 
 Parsing Obj
-        - Fix les normals et ajouter les indices etc dans la structure mesh
         - coherence des valeurs
                         - Check si un carré a des vtx en double avant de le trianguliser
                         - Check si les vertex on eté declare plusieur fois
