@@ -36,6 +36,8 @@ impl App {
                     .with_inner_size(ctx.width, ctx.height)
                     .with_title("Super Scop :O")
                     .build(&ev);
+                // TODO move this
+                // -------
                 let obj = Object::new(&display, &ctx);
                 let mut app = Self {
                     window: window,
@@ -167,6 +169,16 @@ impl ApplicationHandler for App {
                         }
                         KeyCode::KeyX => {
                             self.ctx.speed_factor *= -1.0;
+                        },
+                        KeyCode::KeyN => {
+                            if self.ctx.mix_factor > 0.0 {
+                                self.ctx.mix_factor -= 0.1;
+                            }
+                        }
+                        KeyCode::KeyM => {
+                            if self.ctx.mix_factor < 1.0 {
+                                self.ctx.mix_factor += 0.1;
+                            }
                         }
                         _ => {}
                     }

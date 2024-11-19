@@ -1,21 +1,10 @@
 use super::{
     object::Vertex,
     object::Normal,
-    coherence::check_coherence,
+    object::Textures,
+    utils::has_duplicate
 };
 use std::fs::read_to_string;
-
-#[derive(Clone, Debug)]
-struct Texture {
-    pub position: (u32, u32),
-}
-impl Texture {
-    pub fn new(x: u32, y: u32) -> Self {
-        Self { 
-            position: (x, y)
-        }
-    }
-}
 
 #[derive(Clone, Debug)]
 pub struct Face {
@@ -38,20 +27,36 @@ impl Face {
         }
     }
 }
+
+#[derive(Clone, Debug)]
+pub struct Indices {
+    pub vertices_indices: Vec<u32>,
+    pub textures_indices: Vec<u32>,
+}
+
+impl Indices {
+    pub fn new() -> Self {
+        Self {
+            vertices_indices: Vec::new(),
+            textures_indices: Vec::new()
+        }
+    }
+}
+
+
 #[derive(Clone, Debug)]
 pub struct ObjParams {
     pub s: String,
     pub name: Option<String>,
     pub mtlpath: Option<String>,
     pub vertexs: Vec<Vertex>,
-    pub indices: Vec<u32>,
+    pub indices: Indices,
     pub faces_normals: Vec<Normal>,
     pub vn: Vec<Normal>,
-    pub vt: Vec<(f32, f32)>,
+    pub vt: Vec<Textures>,
     pub vertex_normals: Vec<Normal>,
-    pub vertex_textures: Vec<(f32, f32)>,
     pub centroid: [f32; 3],
-    pub faces: Vec<Face>
+    pub faces: Vec<Face>,
 }
 
 impl ObjParams {
@@ -65,25 +70,30 @@ impl ObjParams {
                 v
             },
             s: "off".to_string(),
-            indices: Vec::new(),
+            indices: Indices::new(),
             faces: Vec::new(),
             faces_normals: Vec::new(),
             vn: Vec::new(),
             vt: Vec::new(),
             vertex_normals: Vec::new(),
-            vertex_textures: Vec::new(),
             centroid: [0.0, 0.0, 0.0],
         }
     }
     
     fn init_indices(& mut self) {
-        let mut ret: Vec<u32> = Vec::new();
+        let mut vertices: Vec<u32> = Vec::new();
+        let mut textures: Vec<u32> = Vec::new();
+
         for face in &self.faces {
             for x in &face.f {
-                ret.push(*x);
+                vertices.push(*x);
+            }
+            for x in &face.vt {
+                textures.push(*x);
             }
         }
-        self.indices = ret;
+        self.indices.textures_indices = textures;
+        self.indices.vertices_indices = vertices;
     }
 
     fn cross_product(&self, u: (f32, f32, f32), v: (f32, f32, f32)) -> Normal {
@@ -110,7 +120,17 @@ impl ObjParams {
             );
         self.cross_product(u, v)
     }
-
+    // fn init_textures_vertex(& mut self) {
+    //     let mut texture_vtx: Vec<Normal> = vec![Normal::new(0.0, 0.0, 0.0)];
+    //     for face in &self.faces {
+    //         let (u, v) = (
+    //             self.vt[face.vt[0] as usize],
+    //             self.vt[face.vt[1] as usize],
+    //         );
+    //         texture_vtx.push(self.calc_face_normal(a, b, c));
+    //     }
+    //     self.vertex_textures = texture_vtx;
+    // }
     fn init_faces_normals(& mut self) {
         let mut faces_normals: Vec<Normal> = vec![Normal::new(0.0, 0.0, 0.0)];
         for face in &self.faces {
@@ -123,7 +143,7 @@ impl ObjParams {
         }
         self.faces_normals = faces_normals;
     }
-
+    // TODO Careful with divide by zero
     pub fn normalize(vn: &mut Vec<Normal>) {
         for normal in vn {
             let length = (normal.normal.0 * normal.normal.0 + 
@@ -166,6 +186,7 @@ impl ObjParams {
             self.init_faces_normals();
         }
         self.calculate_vertex_normals(use_vn);
+        // self.init_textures_indices();
     }
 
     fn init_centroid(& mut self) {
@@ -185,6 +206,35 @@ impl ObjParams {
 impl Default for ObjParams {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+
+pub fn check_coherence(parsed_obj: &ObjParams) -> Result<(), String> {
+    let vlen: u32 = parsed_obj.vertexs.len() as u32;
+    let vnlen: u32 = parsed_obj.vn.len() as u32;
+    if vlen <= 0 || vlen >= 100000{
+        return Err(format!("Error: vertexs must be between 1 and 1e6."));
+    } else {
+        for face in &parsed_obj.faces {
+            for v in &face.f {
+                if *v <= 0 || *v > vlen {
+                    return Err(format!("Error: A face is out of the vertex range."));
+                }
+            }
+            if vnlen != 0 {
+                for vn in &face.vn {
+                    if *vn <= 0 || *vn > vnlen {
+                        return Err(format!("Error: A vn is out of the vertex normals range."));
+                    }
+                }
+            }
+            // TODO add check for vt
+            if has_duplicate(&face.f) {
+                return Err(format!("Error: A face contain duplicate vertex."));
+            }
+        }
+        Ok(())
     }
 }
 
@@ -328,7 +378,7 @@ pub fn obj_parser(filepath: &str) -> Result<ObjParams, String> {
                         return Err(format!("Error: Invalid format : {} {:?}.", key, splited));
                     }
                     match (splited[0].parse::<f32>(), splited[1].parse::<f32>()) {
-                        (Ok(u), Ok(v)) => obj.vt.push((u, v)),
+                        (Ok(u), Ok(v)) => obj.vt.push(Textures::new(u, v)),
                         _ => Err(format!("Error: Invalid texture coordinates must be f32."))?
                     }
                 }
@@ -336,10 +386,10 @@ pub fn obj_parser(filepath: &str) -> Result<ObjParams, String> {
             }
         }
     }
-    obj.init_others_fields();
     if let Err(error) = check_coherence(&obj) {
         return Err(format!("{}", error));
     }
+    obj.init_others_fields();
     Ok(obj)
 }
 
@@ -349,8 +399,6 @@ pub fn obj_parser(filepath: &str) -> Result<ObjParams, String> {
     // if filepath.to_lowercase().ends_with(".obj") {
 //     } else if filepath.to_lowercase().ends_with(".tga") {
 //         tga_parser(filepath);
-//     } else  if filepath.to_lowercase().ends_with(".mtl") {
-//         mtl_parser(filepath);
 //     } else {
 //         println!("Error: Unsupported file extension.")
 //     }

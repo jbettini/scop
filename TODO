@@ -1,20 +1,17 @@
 
 Current:
 
+Textures : 
+        -       Utiliser une lib pour le parsing des textures en tga
+        -       appliquer des textures sur tout l'objets ou via les vt
 Parsing Obj
         - coherence des valeurs
-                        - Check si un carré a des vtx en double avant de le trianguliser
-                        - Check si les vertex on eté declare plusieur fois
-                        - Check si toute les faces, normals et textures existe
+                        vertex normal, vt, indices
         - parametre s
         - Parsing
                 - Hard test parsing
-        - Ajouter le drag and drop
-        <!-- Optional :
-        - Pasrsing mtl
-                -  Mettre les faces dans une stucture material -->
-Textures
-Parsing Tga
+Parsing Tga :
+        -       Faire un Parseur pour tga qui remplace la lib
 
 
 

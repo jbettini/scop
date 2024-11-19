@@ -12,14 +12,18 @@ impl Shader {
             #version 330
                 in vec3 position;
                 in vec3 normal;
-
+                in vec2 tex_coords;
+                
+                out vec2 v_tex_coords;
                 out vec3 v_normal;
                 out vec3 v_position; 
+
                 uniform mat4 rotation_matrix;
                 uniform mat4 perspective_matrix;
                 uniform vec3 object_center;
 
                 void main() {
+                    v_tex_coords = tex_coords;
                     v_normal = normalize(transpose(inverse(mat3(rotation_matrix))) * normal);
                     v_position = vec3(rotation_matrix * vec4(position, 1.0));
                     vec3 centered_position = position - object_center;
@@ -33,14 +37,17 @@ impl Shader {
             #version 330
                 in vec3 v_normal;
                 in vec3 v_position;
+                in vec2 v_tex_coords;
 
                 out vec4 color;
 
                 uniform vec3 light;
+                uniform sampler2D diffuse_texture;
+                uniform float mix_factor;
 
-                const vec3 ambient_color = vec3(0.0, 0.2, 0.2);
-                const vec3 diffuse_color = vec3(0.0, 0.6, 0.6);
-                const vec3 specular_color = vec3(1.0, 1.0, 1.0);
+                vec3 diffuse_color = texture(diffuse_texture, v_tex_coords).rgb;
+                vec3 ambient_color = diffuse_color * 0.1;
+                vec3 specular_color = vec3(0.2, 0.2, 0.4);
 
                 void main() {
                     float diffuse = max(dot(v_normal, light), 0.0);
@@ -48,7 +55,8 @@ impl Shader {
                     vec3 camera_dir = -v_position;
                     vec3 half_direction = normalize(light + camera_dir);
                     float specular = pow(max(dot(v_normal, half_direction), 0.0), 16.0);
-                    color = vec4(ambient_color + diffuse * diffuse_color + specular * specular_color, 1.0);
+                    vec3 final_color = mix(ambient_color, diffuse_color, mix_factor);
+                    color = vec4(final_color + diffuse * final_color + specular * specular_color, 1.0);
                 }
             "#,
         }
@@ -61,6 +69,7 @@ impl Shader {
                     in vec3 v_normal;
                     out vec4 color;
                     uniform vec3 light;
+                    
         
                     void main() {
                         float brightness = dot(normalize(v_normal), normalize(light));

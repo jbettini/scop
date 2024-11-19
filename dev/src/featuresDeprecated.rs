@@ -138,37 +138,3 @@
 // ---------------------------------------------------------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-// // First way to calc normals
-
-// pub fn calc_vertex_normals(&mut self) {
-//     let mut ret = vec![Normal { normal: (0.0, 0.0, 0.0) }; self.vertexs.len()];
-//     for (face_index, face) in self.faces.iter().enumerate() {
-//         let normal = &self.faces_normals[face_index + 1];
-//         for vertex_index in &face.f {
-//             let vertex_normal = &mut ret[*vertex_index as usize];
-//             vertex_normal.normal.0 += normal.normal.0;
-//             vertex_normal.normal.1 += normal.normal.1;
-//             vertex_normal.normal.2 += normal.normal.2;
-//         }
-//     }
-//     ObjParams::normalize(&mut ret);
-//     self.vertex_normals = ret;
-// }
-                
-// fn init_vertex_normals_from_vn(&mut self) {
-//     let mut ret = vec![Normal { normal: (0.0, 0.0, 0.0) }; self.vertexs.len()];
-//     for face in &self.faces {
-//         for (&vertex_index, &normal_index) in face.f.iter().zip(face.vn.iter()) {
-//             let normal = self.vertex_normals[normal_index as usize];
-//             let vertex_normal = &mut ret[vertex_index as usize];
-//             vertex_normal.normal.0 += normal.normal.0;
-//             vertex_normal.normal.1 += normal.normal.1;
-//             vertex_normal.normal.2 += normal.normal.2;
-//         }
-//     }
-//     ObjParams::normalize(&mut ret);
-//     self.vertex_normals = ret;
-// }
