@@ -4,8 +4,8 @@ use glium::{
     glutin::surface::WindowSurface,
     Surface,
     Display,
-    VertexBuffer,
-    IndexBuffer,
+    // VertexBuffer,
+    // IndexBuffer,
     uniform
 };
 
@@ -20,7 +20,6 @@ use super::{
 pub struct Normal {
     pub normal: (f32, f32, f32),
 }
-glium::implement_vertex!(Normal, normal);
 impl Normal {
     pub fn new(x: f32, y: f32, z: f32) -> Self {
         Self {
@@ -28,15 +27,14 @@ impl Normal {
         }
     }
 }
+glium::implement_vertex!(Normal, normal);
+
 
 #[derive(Copy, Clone, Debug)]
 pub struct Vertex {
     pub position: (f32, f32, f32),
     // pub tex_coords: [f32; 2]
 }
-
-glium::implement_vertex!(Vertex, position);
-
 impl Vertex {
     pub fn new(i: f32, j: f32, k: f32) -> Self {
         Self {
@@ -44,21 +42,17 @@ impl Vertex {
         }
     }
 }
-
+glium::implement_vertex!(Vertex, position);
 
 pub struct Object {
-    indice: glium::IndexBuffer<u16>,
+    indice: glium::IndexBuffer<u32>,
     normal: glium::VertexBuffer<Normal>,
     position: glium::VertexBuffer<Vertex>,
     shaders: Shader,
-    normal_lines_position: glium::VertexBuffer<Vertex>,
-    normal_lines_indice: glium::IndexBuffer<u16>,
-
 }
 
 impl Object {
     pub fn new(display: &Display<WindowSurface>, ctx: &Ctx) -> Self {
-        let (normal_lines_vertices, normal_lines_indices) = ctx.mesh.generate_normal_lines(10.0);
         
         Self {
             position: glium::VertexBuffer::new(display, &ctx.mesh.vertexs)
@@ -70,21 +64,8 @@ impl Object {
                 glium::index::PrimitiveType::TrianglesList,
                 &ctx.mesh.indices,
             ).expect("Failed to create index buffer"),
-            normal_lines_position: glium::VertexBuffer::new(display, &normal_lines_vertices)
-                .expect("Failed to create normal lines position buffer"),
-            normal_lines_indice: glium::IndexBuffer::new(
-                display,
-                glium::index::PrimitiveType::LinesList,
-                &normal_lines_indices,
-            ).expect("Failed to create normal lines index buffer"),
             shaders: Shader::default(),
         }
-    }
-    fn create_normal_buffers(&self, display: &Display<WindowSurface>, ctx: &Ctx) -> (glium::VertexBuffer<Vertex>, glium::IndexBuffer<u16>) {
-        let (normal_vertices, normal_indices) = ctx.mesh.generate_normal_lines(0.1);
-        let normal_vbo = glium::VertexBuffer::new(display, &normal_vertices).unwrap();
-        let normal_ibo = glium::IndexBuffer::new(display, glium::index::PrimitiveType::LinesList, &normal_indices).unwrap();
-        (normal_vbo, normal_ibo)
     }
 
     pub fn get_color(r: u8, g: u8, b: u8) -> (f32, f32, f32, f32) {
@@ -135,33 +116,6 @@ impl Object {
             .. Default::default()
         };
         frame.draw((&self.position, &self.normal), &self.indice, &program, &uniforms, &params).unwrap();
-    
-        if ctx.show_normals {
-            let (normal_vbo, normal_ibo) = self.create_normal_buffers(display, ctx);
-            let normal_program = glium::Program::from_source(display, 
-                self.shaders.normal_vertex_shader, 
-                self.shaders.normal_fragment_shader, 
-                None).unwrap();
-    
-            let normal_uniforms = uniform! {
-                rotation_matrix: rotation_matrix,
-                perspective_matrix: perspective_matrix,
-                object_center: ctx.mesh.centroid,
-                normal_length: 0.2f32,
-            };
-    
-            let normal_params = glium::DrawParameters {
-                depth: glium::Depth {
-                    test: glium::draw_parameters::DepthTest::IfLess,
-                    write: true,
-                    .. Default::default()
-                },
-                .. Default::default()
-            };
-    
-            frame.draw(&normal_vbo, &normal_ibo, &normal_program, &normal_uniforms, &normal_params).unwrap();
-        }
-    
         frame.finish().unwrap();
     }
 }

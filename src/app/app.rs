@@ -162,9 +162,6 @@ impl ApplicationHandler for App {
                                 self.ctx.polmode += 1;
                             }
                         },
-                        KeyCode::KeyN => {
-                            self.ctx.show_normals = !self.ctx.show_normals;
-                        },
                         KeyCode::KeyH => {
                             utils::print_help();
                         }

@@ -1,8 +1,8 @@
 use std::collections::HashSet;
 
 
-pub fn has_duplicate(f: &Vec<u16>) -> bool {
-    let mut tmp:  HashSet<u16> = HashSet::new();
+pub fn has_duplicate(f: &Vec<u32>) -> bool {
+    let mut tmp:  HashSet<u32> = HashSet::new();
     for x in f {
         if tmp.contains(&x) {
             return true;

@@ -5,3 +5,4 @@ pub mod shaders;
 pub mod ctx;
 pub mod parser;
 pub mod utils;
+pub mod coherence;

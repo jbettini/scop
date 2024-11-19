@@ -5,15 +5,14 @@ Parsing Obj
         - coherence des valeurs
                         - Check si un carré a des vtx en double avant de le trianguliser
                         - Check si les vertex on eté declare plusieur fois
+                        - Check si toute les faces, normals et textures existe
         - parametre s
         - Parsing
                 - Hard test parsing
-                - Ajout de vt
-                - Ajout de vn
-                - Ajout de mtl
         - Ajouter le drag and drop
+        <!-- Optional :
         - Pasrsing mtl
-                -  Mettre les faces dans une stucture material
+                -  Mettre les faces dans une stucture material -->
 Textures
 Parsing Tga
 

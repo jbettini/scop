@@ -18,7 +18,7 @@ pub struct Ctx {
     pub mesh: ObjParams,
     pub light_move: bool,
     pub light: [f32; 3],
-    pub show_normals: bool
+
 }
 
 impl Ctx {
@@ -36,7 +36,7 @@ impl Ctx {
             polmode: 0,
             speed_factor: 0.015,
             mesh: {
-                let obj_ret = obj_parser("./obj/rust.obj");
+                let obj_ret = obj_parser("./obj/42.obj");
                 match obj_ret {
                     Ok(obj) => obj,
                     Err(err) => {
@@ -47,7 +47,7 @@ impl Ctx {
             },
             light: [0.0, 0.0, -0.5],
             light_move: false,
-            show_normals: false
+
         }
     }
 }
