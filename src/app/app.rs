@@ -31,12 +31,12 @@ impl App {
             Ok(ev) => {
                 ev.set_control_flow(ControlFlow::Wait);
                 ev.set_control_flow(ControlFlow::Poll);
-                let ctx = Ctx::new();
+                let mut ctx = Ctx::new();
                 let (window, display) = glium::backend::glutin::SimpleWindowBuilder::new()
                     .with_inner_size(ctx.width, ctx.height)
                     .with_title("Super Scop :O")
                     .build(&ev);
-                let renderer = Renderer::new(&display, &ctx);
+                let renderer = Renderer::new(&display, & mut ctx);
                 let mut app = Self {
                     window: window,
                     display: display,

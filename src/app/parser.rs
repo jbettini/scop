@@ -72,7 +72,7 @@ impl Obj {
         return faces_normals;
     }
 
-    fn calculate_vertex_normals(&mut self) -> Vec<[f32; 3]>{
+    pub fn calculate_vertex_normals(&mut self) -> Vec<[f32; 3]>{
         let mut ret: Vec<[f32; 3]> = vec![[0.0, 0.0, 0.0]; self.vertexs.len()];
         let faces_normals = self.get_faces_normals();
         

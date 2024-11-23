@@ -40,14 +40,15 @@ impl Normalize for Vec<[f32; 3]> {
                             normal[2] * normal[2])
                             .sqrt();
             if length == 0.00 {
-                println!("Error: Normal cannot get normalize, length equal zero.");
-                std::process::exit(1);
+                normal[0] = 1.0;
+                normal[1] = length;
+                normal[2] = length;
             }
             else {
+            }
                 normal[0] /= length;
                 normal[1] /= length;
                 normal[2] /= length;
-            }
         }
     }
 }

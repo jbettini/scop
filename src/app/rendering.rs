@@ -42,16 +42,20 @@ pub struct Renderer {
 }
 
 impl Renderer {
-    pub fn new(display: &Display<WindowSurface>, ctx: &Ctx) -> Self {
+    pub fn new(display: &Display<WindowSurface>, ctx: & mut Ctx) -> Self {
         let mut mesh:  Vec<Mesh> = Vec::new();
-        let obj = &ctx.obj;
+        let obj = & mut ctx.obj;
+        let vertex_normals = obj.calculate_vertex_normals();
         for face in &obj.faces {
             for i in 0..3 {
-                mesh.push(Mesh::new(
-                    obj.vertexs[face.v[i] as usize],
-                    obj.vn[face.vn[i] as usize],
-                    obj.vt[face.vt[i] as usize]
-                ))
+                let vertex = obj.vertexs[face.v[i] as usize];
+                let normal = if obj.vn.len() <= 1 {
+                    vertex_normals[face.v[i] as usize]
+                } else {
+                    obj.vn[face.vn[i] as usize]
+                };
+                let texture = obj.vt[face.vt[i] as usize];
+                mesh.push(Mesh::new(vertex, normal, texture));
             }
         }
         Self {

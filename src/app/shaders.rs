@@ -35,6 +35,31 @@ impl Shader {
 
             fragment_shader: r#"
             #version 330
+                in vec3 v_normal;
+                in vec2 v_tex_coords;
+
+                out vec4 color;
+                uniform vec3 light;
+
+                uniform sampler2D diffuse_texture;
+                uniform float mix_factor;
+                
+                void main() {
+                    float brightness = dot(normalize(v_normal), normalize(light));
+                    vec3 dark_color = vec3(0.0, 0.05, 0.05);
+                    vec3 regular_color = texture(diffuse_texture, v_tex_coords).rgb;
+                    vec3 mixed_color = mix(dark_color, regular_color, brightness);
+                    vec3 final_color = mix(dark_color, mixed_color, mix_factor);
+                    color = vec4(final_color, 1.0);
+                }
+            "#,
+        }
+    }
+
+    pub fn switch_shading(&mut self, ctx: &mut Ctx) {
+        if ctx.shading {
+            self.fragment_shader = r#"
+                #version 330
                     in vec3 v_normal;
                     in vec3 v_position;
 
@@ -53,31 +78,6 @@ impl Shader {
                         vec3 half_direction = normalize(light + camera_dir);
                         float specular = pow(max(dot(v_normal, half_direction), 0.0), 16.0);
                         color = vec4(ambient_color + diffuse * diffuse_color + specular * specular_color, 1.0);
-                    }
-                "#,
-        }
-    }
-
-    pub fn switch_shading(&mut self, ctx: &mut Ctx) {
-        if ctx.shading {
-            self.fragment_shader = r#"
-                    #version 330
-                    in vec3 v_normal;
-                    in vec2 v_tex_coords;
-
-                    out vec4 color;
-                    uniform vec3 light;
-
-                    uniform sampler2D diffuse_texture;
-                    uniform float mix_factor;
-                    
-                    void main() {
-                        float brightness = dot(normalize(v_normal), normalize(light));
-                        vec3 dark_color = vec3(0.0, 0.05, 0.05);
-                        vec3 regular_color = texture(diffuse_texture, v_tex_coords).rgb;
-                        vec3 mixed_color = mix(dark_color, regular_color, brightness);
-                        vec3 final_color = mix(dark_color, mixed_color, mix_factor);
-                        color = vec4(final_color, 1.0);
                     }
                 "#;
         } else {

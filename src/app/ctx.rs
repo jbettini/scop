@@ -36,7 +36,7 @@ impl Ctx {
             polmode: 0,
             speed_factor: 0.015,
             obj: {
-                let obj_ret = obj_parser("./obj/monkey.obj");
+                let obj_ret = obj_parser("./obj/42.obj");
                 match obj_ret {
                     Ok(obj) => obj,
                     Err(err) => {

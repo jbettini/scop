@@ -1,8 +1,8 @@
 #[derive(Copy, Clone, Debug)]
 pub struct Mesh {
 	position: [f32; 3],
-	normal: [f32; 3],
-	tex_coords: [f32; 2],
+	pub normal: [f32; 3],
+	pub tex_coords: [f32; 2],
 }
 
 glium::implement_vertex!(Mesh, position, normal, tex_coords);
@@ -19,5 +19,9 @@ impl Mesh {
             tex_coords
         }
     }
+
+    // pub fn init_vn(normals: Vec<[f32; 3]>) {
+
+    // }
 }
 
