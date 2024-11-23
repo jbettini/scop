@@ -1,4 +1,4 @@
-use super::{utils::has_duplicate, vec::{Normal, Normalize}};
+use super::vec::{Normal, Normalize};
 
 use std::fs::read_to_string;
 
@@ -28,7 +28,6 @@ impl Face {
         }
     }
 }
-
 
 #[derive(Clone, Debug)]
 pub struct Obj {
@@ -110,43 +109,6 @@ impl Default for Obj {
         Self::new()
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // pub fn check_coherence(parsed_obj: &Obj) -> Result<(), String> {
 //     let vlen: u32 = parsed_obj.vertexs.len() as u32;
@@ -323,12 +285,7 @@ pub fn obj_parser(filepath: &str) -> Result<Obj, String> {
     // if let Err(error) = check_coherence(&obj) {
     //     return Err(format!("{}", error));
     // }
-    // let mut use_vn = true;
     obj.init_centroid();
-    // if obj.vn.len() == 0 {
-    //     use_vn = false;
-    // }
-    // obj.calculate_vertex_normals();
     Ok(obj)
 }
 

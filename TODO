@@ -2,9 +2,15 @@
 Current:
 
 
+calcul uvmap + afficher un fichier .obj comme ceux de l'intra
+coeherence des valeurs
+parseur ppm
+drag and drop
+
+
+
 Parsing Obj
         - coherence des valeurs
-                        vertex normal, vt, indices
         - Parsing
                 - Hard test parsing
 Parsing Tga :

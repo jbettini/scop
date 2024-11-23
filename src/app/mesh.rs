@@ -1,5 +1,3 @@
-use super::ctx::Ctx;
-
 #[derive(Copy, Clone, Debug)]
 pub struct Mesh {
 	position: [f32; 3],
@@ -22,3 +20,4 @@ impl Mesh {
         }
     }
 }
+

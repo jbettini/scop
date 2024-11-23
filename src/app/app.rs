@@ -36,8 +36,6 @@ impl App {
                     .with_inner_size(ctx.width, ctx.height)
                     .with_title("Super Scop :O")
                     .build(&ev);
-                // TODO move this
-                // -------
                 let renderer = Renderer::new(&display, &ctx);
                 let mut app = Self {
                     window: window,

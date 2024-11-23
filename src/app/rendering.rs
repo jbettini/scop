@@ -9,7 +9,10 @@ use glium::{
 };
 
 use super::{
-    ctx::Ctx, matrix::Matrix, parser::Obj, shaders::Shader, mesh::Mesh
+    ctx::Ctx, 
+    matrix::Matrix,
+    shaders::Shader, 
+    mesh::Mesh
 };
 
 
