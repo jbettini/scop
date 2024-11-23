@@ -1,6 +1,6 @@
 use super::parser::{
     obj_parser,
-    ObjParams
+    Obj
 };
 
 pub struct Ctx {
@@ -15,7 +15,7 @@ pub struct Ctx {
     pub backface: bool,
     pub polmode: i32,
     pub speed_factor: f32,
-    pub mesh: ObjParams,
+    pub obj: Obj,
     pub light_move: bool,
     pub light: [f32; 3],
     pub mix_factor: f32
@@ -35,7 +35,7 @@ impl Ctx {
             backface: true,
             polmode: 0,
             speed_factor: 0.015,
-            mesh: {
+            obj: {
                 let obj_ret = obj_parser("./obj/monkey.obj");
                 match obj_ret {
                     Ok(obj) => obj,

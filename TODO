@@ -1,13 +1,10 @@
 
 Current:
 
-Textures : 
-        -       Utiliser une lib pour le parsing des textures en tga
-        -       appliquer des textures sur tout l'objets ou via les vt
+
 Parsing Obj
         - coherence des valeurs
                         vertex normal, vt, indices
-        - parametre s
         - Parsing
                 - Hard test parsing
 Parsing Tga :

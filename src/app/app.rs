@@ -13,14 +13,14 @@ use glium::{
 
 use super::{
     ctx::Ctx,
-    object::Object,
+    rendering::Renderer,
     utils
 };
 
 pub struct App {
     pub window: Window,
     pub display: Display<WindowSurface>,
-    pub form: Object,
+    pub renderer: Renderer,
     pub ctx: Ctx,
 }
 
@@ -38,11 +38,11 @@ impl App {
                     .build(&ev);
                 // TODO move this
                 // -------
-                let obj = Object::new(&display, &ctx);
+                let renderer = Renderer::new(&display, &ctx);
                 let mut app = Self {
                     window: window,
                     display: display,
-                    form: obj,
+                    renderer: renderer,
                     ctx: ctx,
                 };
                 let _ = ev.run_app(&mut app);
@@ -70,7 +70,7 @@ impl ApplicationHandler for App {
                 event_loop.exit();
             },
             WindowEvent::RedrawRequested => {
-                self.form.draw_obj(&self.display, & mut self.ctx);
+                self.renderer.draw_obj(&self.display, & mut self.ctx);
                 self.window.request_redraw();
             },
             WindowEvent::KeyboardInput { device_id: _device_id, event, is_synthetic } => {
@@ -149,7 +149,7 @@ impl ApplicationHandler for App {
                             }
                         }
                         KeyCode::KeyP => {
-                            self.form.shaders_switch(& mut self.ctx);             
+                            self.renderer.shaders_switch(& mut self.ctx);             
                         },
                         KeyCode::KeyL => {
                             self.ctx.light_move = !self.ctx.light_move
