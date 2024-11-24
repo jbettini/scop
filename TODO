@@ -2,24 +2,19 @@
 Current:
 
 
-calcul uvmap 
-coeherence des valeurs
-parseur ppm
-drag and drop
-
-
-
-Parsing Obj
-        - coherence des valeurs
-        - Parsing
-                - Hard test parsing
-Parsing Tga :
-        -       Faire un Parseur pour tga qui remplace la lib
-
+Task :
+- coeherence des valeurs
+- Hard test parsing
 
 
 BONUS 
 
+
+Gestion de la rotation
+Lumiere + reflexion + deplacement de la lumiere
+Drag and drop
+Wireframe
+Parsing obj ++
 
 -   Drag and drop       // Besoin du parsing des objs et des textures
 -   Multiple commande                                                   Total 6/6
@@ -46,5 +41,3 @@ Fleche du bas : Deplace vers le bas
 Fleche de gauche : accelere la rotation vers la gauche 
 Fleche de droite : accelere la rotation vers la droite
 X: Change le sens de la rotation
-
-Souris: deplacement de lángle de la camera

@@ -1,6 +1,5 @@
 use glium::{
     self,
-    Texture2d,
     glutin::surface::WindowSurface,
     Surface,
     Display,
@@ -12,56 +11,32 @@ use super::{
     ctx::Ctx, 
     matrix::Matrix,
     shaders::Shader, 
-    mesh::Mesh
+    mesh::Mesh,
+    parser::Images
 };
 
 
-pub struct Images {
-    pub dimension: (u32, u32),
-    pub diffuse_texture: Texture2d
-}
-
-impl Images {
-    pub fn new(display: &Display<WindowSurface>) -> Self {
-        let img = image::load(std::io::Cursor::new(&include_bytes!("/Users/xtem/Desktop/scop/obj/Texture/test.png")),
-        image::ImageFormat::Png).unwrap().to_rgba8();
-        let dim = img.dimensions();
-        let img = glium::texture::RawImage2d::from_raw_rgba_reversed(&img.into_raw(), dim);
-        let tex = glium::texture::Texture2d::new(display, img).unwrap();
-        Self {
-            dimension: dim,
-            diffuse_texture: tex
-        }
-    }
-}
-
 pub struct Renderer {
-    mesh: Vec<Mesh>,
+    pub mesh: Vec<Mesh>,
+    pub img: Images,
     shaders: Shader,
-    img: Images,
 }
 
 impl Renderer {
     pub fn new(display: &Display<WindowSurface>, ctx: & mut Ctx) -> Self {
-        let mut mesh:  Vec<Mesh> = Vec::new();
-        let obj = & mut ctx.obj;
-        let vertex_normals = obj.calculate_vertex_normals();
-        for face in &obj.faces {
-            for i in 0..3 {
-                let vertex = obj.vertexs[face.v[i] as usize];
-                let normal = if obj.vn.len() <= 1 {
-                    vertex_normals[face.v[i] as usize]
-                } else {
-                    obj.vn[face.vn[i] as usize]
-                };
-                let texture = obj.vt[face.vt[i] as usize];
-                mesh.push(Mesh::new(vertex, normal, texture));
-            }
-        }
         Self {
-            mesh,
+            mesh: Mesh::get_mesh_vector(ctx),
             shaders: Shader::default(),
-            img: Images::new(&display)
+            img: {
+                let img = Images::new(display, "/Users/xtem/Desktop/scop/obj/Texture/metal.ppm");
+                match img {
+                    Ok(img) => img,
+                    Err(err) => {
+                        println!("{:?}", err);
+                        std::process::exit(1);
+                    }
+                }
+            }
         }
     }
 

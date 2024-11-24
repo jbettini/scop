@@ -67,8 +67,8 @@ impl Shader {
 
                     uniform vec3 light;
 
-                    const vec3 ambient_color = vec3(0.4, 0.2, 0.4);
-                    const vec3 diffuse_color = vec3(0.0, 0.6, 0.6);
+                    const vec3 ambient_color = vec3(0.3, 0.15, 0.1);
+                    const vec3 diffuse_color = vec3(0.3, 0.15, 0.1);
                     const vec3 specular_color = vec3(1.0, 1.0, 1.0);
 
                     void main() {

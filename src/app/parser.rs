@@ -1,6 +1,10 @@
 use super::vec::{Normal, Normalize};
 
-use std::fs::read_to_string;
+use glium::{
+    self, glutin::surface::WindowSurface, texture::RawImage2d, Display, Texture2d
+};
+
+use std::{fs::{read_to_string, File}, io::{BufRead, BufReader, Read}};
 
 #[derive(Clone, Debug)]
 pub struct Face {
@@ -39,6 +43,13 @@ pub struct Obj {
     pub vn: Vec<[f32; 3]>,
     pub vt: Vec<[f32; 2]>,
     pub faces: Vec<Face>,
+    pub min_x: f32,
+    pub max_x: f32,
+    pub min_y: f32,
+    pub max_y: f32,
+    pub max_z: f32,
+    pub min_z: f32,
+
 
     pub centroid: [f32; 3],
 }
@@ -54,6 +65,12 @@ impl Obj {
             vn: vec!([0.0, 0.0, 0.0]),
             vt: vec!([0.0, 0.0]),
             faces: Vec::new(),
+            min_x: f32::MAX,
+            min_y: f32::MAX,
+            min_z: f32::MAX,
+            max_x: f32::MIN,
+            max_y: f32::MIN,
+            max_z: f32::MIN,
 
             centroid: [0.0, 0.0, 0.0],
         }
@@ -102,6 +119,33 @@ impl Obj {
         self.centroid = [x / len, y / len, z / len];
     }
 
+    fn get_min_max(& mut self){
+        let mut min_x = f32::MAX;
+        let mut max_x = f32::MIN;
+        let mut min_y = f32::MAX;
+        let mut max_y = f32::MIN;
+        let mut min_z = f32::MAX;
+        let mut max_z = f32::MIN;
+
+        for face in &self.faces {
+            for indice in face.v {
+                min_x = min_x.min(self.vertexs[indice as usize][0]);
+                min_y = min_y.min(self.vertexs[indice as usize][1]);
+                min_z = min_z.min(self.vertexs[indice as usize][2]);
+                max_x = max_x.max(self.vertexs[indice as usize][0]);
+                max_y = max_y.max(self.vertexs[indice as usize][1]);
+                max_z = max_z.max(self.vertexs[indice as usize][2]);
+
+            }
+        }
+        self.min_x = min_x;
+        self.min_y = min_y;
+        self.min_z = min_z;
+        self.max_x = max_x;
+        self.max_y = max_y;
+        self.max_z = max_z;
+        
+    }
 }
 
 impl Default for Obj {
@@ -260,7 +304,7 @@ pub fn obj_parser(filepath: &str) -> Result<Obj, String> {
                     }
                 },
                 "s" => {
-                    //LATER: Implementation
+
                 },
                 "vn" => {
                     if splited.len() != 3 {
@@ -285,17 +329,78 @@ pub fn obj_parser(filepath: &str) -> Result<Obj, String> {
     // if let Err(error) = check_coherence(&obj) {
     //     return Err(format!("{}", error));
     // }
+    if obj.vt.len() <= 1 {
+        obj.get_min_max();
+    }
     obj.init_centroid();
     Ok(obj)
 }
+pub struct Images {
+    pub dimension: (u32, u32),
+    pub diffuse_texture: Texture2d
+}
 
-// TODO add this for drag and drop
-// fn parsing_handler(filepath: &str) -> Result<Obj, String> {
-//     return obj_parser(filepath);
-    // if filepath.to_lowercase().ends_with(".obj") {
-//     } else if filepath.to_lowercase().ends_with(".tga") {
-//         tga_parser(filepath);
-//     } else {
-//         println!("Error: Unsupported file extension.")
-//     }
-// }
+impl Images {
+    pub fn new(display: &Display<WindowSurface>, filepath: &str) -> Result<Self, String> {
+        let (img, dim) = ppm_parser(filepath)?;
+        let img = RawImage2d::from_raw_rgba_reversed(&img, dim);
+        let tex = Texture2d::new(display, img).unwrap();
+        Ok(Self {
+            dimension: dim,
+            diffuse_texture: tex
+        })
+    }
+}
+
+pub fn ppm_parser(filepath: &str) -> Result<(Vec<u8>, (u32, u32)), String> {
+    let file = match File::open(filepath) {
+        Ok(f) => f,
+        Err(e) => Err(format!("Error: Impossible to open {}: {}", filepath, e))?
+    };
+    let mut header = String::new();
+    let mut reader = BufReader::new(file);
+    if let Err(e) = reader.read_line(&mut header) {
+        Err(format!("Erreur: Header contain an error: {}", e))?
+    }
+    loop {
+        header.clear();
+        if let Err(e) = reader.read_line(&mut header) {
+            Err(format!("Erreur: Header contain an error: {}", e))?
+        }
+        if !header.starts_with('#') {
+            break;
+        }
+    }
+    let splited: Vec<&str> = header.split_whitespace().collect();
+    if splited.len() < 2 {
+        return Err("Erreur: Dimensions must be specified.".to_string());
+    }
+    let (w, h) = match (splited[0].parse::<u32>(), splited[1].parse::<u32>()) {
+        (Ok(w), Ok(h)) => (w, h),
+        _ => Err("Erreur: Dimensions must be u32.".to_string())?,
+    };
+    header.clear();
+    if let Err(e) = reader.read_line(&mut header) {
+        return Err(format!("Error: Header contains an error: {}", e));
+    }
+    let _max_color_value: u8 = match header.trim().parse() {
+        Ok(n) if n == 255 => n,
+        Ok(_) => Err("Erreur: Only 255 is allowed for max color value".to_string())?,
+        Err(_) => Err("Erreur: Max color value must be in u8.".to_string())?
+    };
+    let mut rgb: Vec<u8> = Vec::new();
+    let mut rgba: Vec<u8> = Vec::new();
+    for byte_or_error in reader.bytes() {
+        let byte = byte_or_error.unwrap();
+        rgb.push(byte);
+        if rgb.len() == 3 {
+            rgba.extend(rgb);
+            rgba.push(255);
+            rgb = Vec::new();
+        }
+    }
+    if rgba.len() !=  (w * h * 4) as usize {
+        Err(format!("Error: Data length ({})does not match expected size for image of {}x{}", rgba.len() / 4, w, h))?
+    }
+    Ok((rgba, (w, h)))
+}

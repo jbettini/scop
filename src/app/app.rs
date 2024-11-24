@@ -11,10 +11,14 @@ use glium::{
     Display
 };
 
+use crate::app::{mesh::Mesh, parser::Obj};
+
 use super::{
     ctx::Ctx,
     rendering::Renderer,
-    utils
+    utils,
+    parser,
+    parser::Images
 };
 
 pub struct App {
@@ -185,6 +189,36 @@ impl ApplicationHandler for App {
             WindowEvent::Resized(window_size) => {
                 self.display.resize(window_size.into());
                 (self.ctx.width, self.ctx.height) = self.display.get_framebuffer_dimensions();
+            },
+            WindowEvent::DroppedFile(path_buf) => {
+                enum ParsedResult {
+                    Obj(Obj),
+                    Images(Images),
+                }
+                let filepath: &str = &path_buf.to_str().unwrap();
+                if !filepath.to_lowercase().ends_with(".obj") && !filepath.to_lowercase().ends_with(".ppm") {
+                    println!("Error: Unsupported file extension.");
+                } else {
+                    let ret: Result<ParsedResult, _> = if filepath.to_lowercase().ends_with(".obj") {
+                        parser::obj_parser(filepath).map(ParsedResult::Obj)
+                    } else {
+                        Images::new(&self.display, filepath).map(ParsedResult::Images)
+                    };
+            
+                    match ret {
+                        Ok(ParsedResult::Obj(obj)) => {
+                            self.ctx.obj = obj;
+                            self.renderer.mesh = Mesh::get_mesh_vector(&mut self.ctx);
+                        },
+                        Ok(ParsedResult::Images(img)) => {
+                            self.renderer.img = img;
+                            self.renderer.mesh = Mesh::get_mesh_vector(&mut self.ctx);
+                        },
+                        Err(err) => {
+                            println!("{:?}", err);
+                        }
+                    }
+                }
             },
             _ => {}
         }
