@@ -5,5 +5,8 @@ edition = "2021"
 
 [dependencies]
 glium = "0.36.0"
-image = "0.25.2"
+memmap2 = "0.9.5"
 winit = "0.30.5"
+
+[profile.release]
+opt-level = 3

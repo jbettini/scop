@@ -18,6 +18,7 @@ pub struct Ctx {
     pub obj: Obj,
     pub light_move: bool,
     pub light: [f32; 3],
+    pub texture: bool,
     pub mix_factor: f32
 }
 
@@ -47,7 +48,8 @@ impl Ctx {
             },
             light: [0.0, 0.0, -0.5],
             light_move: false,
-            mix_factor: 1.0
+            mix_factor: 1.0,
+            texture: true
         }
     }
 }

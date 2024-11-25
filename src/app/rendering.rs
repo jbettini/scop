@@ -50,7 +50,11 @@ impl Renderer {
         if ctx.rotation {
             ctx.rot_speed += ctx.speed_factor;
         }
-    
+        if ctx.texture && ctx.mix_factor < 1.0 {
+            ctx.mix_factor += 0.05;
+        } else if !ctx.texture && ctx.mix_factor > 0.0 {
+            ctx.mix_factor -= 0.05;
+        }
         let rotation_matrix = Matrix::new_rotation(ctx).get_4x4_matrix();
         let perspective_matrix = Matrix::new_perspective(ctx).get_4x4_matrix();
         let vertex_buffer = VertexBuffer::<Mesh>::new(display, &self.mesh).unwrap();
@@ -69,7 +73,7 @@ impl Renderer {
             .expect("Error: \"glium::Program::from_source\" Fail");
     
         let mut frame = display.draw();
-        frame.clear_color_and_depth(Renderer::get_color(0x05, 0x05, 0x05), 1.0);
+        frame.clear_color_and_depth(Renderer::get_color(0x00, 0x05, 0x10), 1.0);
     
         let params = glium::DrawParameters {
             depth: glium::Depth {

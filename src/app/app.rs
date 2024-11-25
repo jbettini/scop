@@ -172,16 +172,9 @@ impl ApplicationHandler for App {
                         KeyCode::KeyX => {
                             self.ctx.speed_factor *= -1.0;
                         },
-                        KeyCode::KeyN => {
-                            if self.ctx.mix_factor > 0.0 {
-                                self.ctx.mix_factor -= 0.1;
-                            }
-                        }
-                        KeyCode::KeyM => {
-                            if self.ctx.mix_factor < 1.0 {
-                                self.ctx.mix_factor += 0.1;
-                            }
-                        }
+                        KeyCode::KeyT => {
+                            self.ctx.texture = !self.ctx.texture;
+                        },
                         _ => {}
                     }
                 }
@@ -195,29 +188,32 @@ impl ApplicationHandler for App {
                     Obj(Obj),
                     Images(Images),
                 }
-                let filepath: &str = &path_buf.to_str().unwrap();
-                if !filepath.to_lowercase().ends_with(".obj") && !filepath.to_lowercase().ends_with(".ppm") {
-                    println!("Error: Unsupported file extension.");
-                } else {
-                    let ret: Result<ParsedResult, _> = if filepath.to_lowercase().ends_with(".obj") {
-                        parser::obj_parser(filepath).map(ParsedResult::Obj)
+                if let Some(filepath) = path_buf.to_str() {
+                    let filepath_lower = filepath.to_lowercase();
+                    if !filepath_lower.ends_with(".obj") && !filepath_lower.ends_with(".ppm") {
+                        println!("Error: Unsupported file extension.");
                     } else {
-                        Images::new(&self.display, filepath).map(ParsedResult::Images)
-                    };
-            
-                    match ret {
-                        Ok(ParsedResult::Obj(obj)) => {
-                            self.ctx.obj = obj;
-                            self.renderer.mesh = Mesh::get_mesh_vector(&mut self.ctx);
-                        },
-                        Ok(ParsedResult::Images(img)) => {
-                            self.renderer.img = img;
-                            self.renderer.mesh = Mesh::get_mesh_vector(&mut self.ctx);
-                        },
-                        Err(err) => {
-                            println!("{:?}", err);
+                        let ret: Result<ParsedResult, _> = if filepath_lower.ends_with(".obj") {
+                            parser::obj_parser(filepath).map(ParsedResult::Obj)
+                        } else {
+                            Images::new(&self.display, filepath).map(ParsedResult::Images)
+                        };
+                        match ret {
+                            Ok(ParsedResult::Obj(obj)) => {
+                                self.ctx.obj = obj;
+                                self.renderer.mesh = Mesh::get_mesh_vector(&mut self.ctx);
+                            },
+                            Ok(ParsedResult::Images(img)) => {
+                                self.renderer.img = img;
+                                self.renderer.mesh = Mesh::get_mesh_vector(&mut self.ctx);
+                            },
+                            Err(err) => {
+                                println!("Error while parsing: {:?}", err);
+                            }
                         }
                     }
+                } else {
+                    println!("Error: Invalid file path.");
                 }
             },
             _ => {}

@@ -4,7 +4,8 @@ use glium::{
     self, glutin::surface::WindowSurface, texture::RawImage2d, Display, Texture2d
 };
 
-use std::{fs::{read_to_string, File}, io::{BufRead, BufReader, Read}};
+use std::{fs::{read_to_string, File}, io::{BufRead, Cursor}, time::Instant};
+use memmap2::Mmap;
 
 #[derive(Clone, Debug)]
 pub struct Face {
@@ -232,9 +233,11 @@ fn triangulize(splited: Vec<&str>) -> Vec<Vec<&str>> {
 }
 
 pub fn obj_parser(filepath: &str) -> Result<Obj, String> {
+    let start_time = Instant::now();
     let mut current_material = "off".to_string();
     let lines = get_file_lines(filepath)?;
     let mut obj: Obj = Obj::new();
+    println!("read: {:.2?}", start_time.elapsed());
     for line in lines {
         if let Some((key, rest)) = line.split_once(' ') {
             let splited: Vec<&str> = rest.split_whitespace().collect();
@@ -326,6 +329,7 @@ pub fn obj_parser(filepath: &str) -> Result<Obj, String> {
             }
         }
     }
+    println!("loop: {:.2?}", start_time.elapsed());
     // if let Err(error) = check_coherence(&obj) {
     //     return Err(format!("{}", error));
     // }
@@ -333,6 +337,9 @@ pub fn obj_parser(filepath: &str) -> Result<Obj, String> {
         obj.get_min_max();
     }
     obj.init_centroid();
+    println!("obj_parser: {:.2?}", start_time.elapsed());
+    println!("----------------------");
+
     Ok(obj)
 }
 pub struct Images {
@@ -343,64 +350,72 @@ pub struct Images {
 impl Images {
     pub fn new(display: &Display<WindowSurface>, filepath: &str) -> Result<Self, String> {
         let (img, dim) = ppm_parser(filepath)?;
-        let img = RawImage2d::from_raw_rgba_reversed(&img, dim);
-        let tex = Texture2d::new(display, img).unwrap();
-        Ok(Self {
-            dimension: dim,
-            diffuse_texture: tex
-        })
+        match Texture2d::new(display, img) {
+            Ok(tex) => {
+                Ok(Self {
+                    dimension: dim,
+                    diffuse_texture: tex
+                })
+            }
+            Err(e) => {
+                Err(format!("Failed to create texture: {:?}", e))?
+            }
+        }
     }
 }
 
-pub fn ppm_parser(filepath: &str) -> Result<(Vec<u8>, (u32, u32)), String> {
-    let file = match File::open(filepath) {
-        Ok(f) => f,
-        Err(e) => Err(format!("Error: Impossible to open {}: {}", filepath, e))?
-    };
-    let mut header = String::new();
-    let mut reader = BufReader::new(file);
-    if let Err(e) = reader.read_line(&mut header) {
-        Err(format!("Erreur: Header contain an error: {}", e))?
-    }
-    loop {
-        header.clear();
-        if let Err(e) = reader.read_line(&mut header) {
-            Err(format!("Erreur: Header contain an error: {}", e))?
+pub fn ppm_parser(filepath: &str) -> Result<(RawImage2d<u8>, (u32, u32)), String> {
+    // read file
+    let file = File::open(filepath)
+                .map_err(|e| format!("Error: Impossible to open {}: {}", filepath, e))?;
+    let mmap = unsafe {
+        match Mmap::map(&file) {
+            Ok(mmap) => mmap,
+            Err(e) => Err(format!("Failed to map the file: {:?}", e))?
         }
-        if !header.starts_with('#') {
+    };
+    let mut reader = Cursor::new(&mmap);
+
+    // version
+    let mut line = String::new();
+    reader.read_line(&mut line)
+            .map_err(|e| format!("Error: Header contain an error: {}", e))?;
+    if line.trim() != "P6" {
+        return Err("Error: unsupported image format".to_string());
+    }
+
+    // comments
+    loop {
+        line.clear();
+        reader.read_line(&mut line)
+                .map_err(|e| format!("Error: Header contain an error: {}", e))?;
+        if !line.starts_with('#') {
             break;
         }
     }
-    let splited: Vec<&str> = header.split_whitespace().collect();
+
+    // width / height
+    let splited = line.split_whitespace().collect::<Vec<_>>();
     if splited.len() < 2 {
-        return Err("Erreur: Dimensions must be specified.".to_string());
+        return Err("Error: Dimensions must be specified.".to_string());
     }
     let (w, h) = match (splited[0].parse::<u32>(), splited[1].parse::<u32>()) {
         (Ok(w), Ok(h)) => (w, h),
-        _ => Err("Erreur: Dimensions must be u32.".to_string())?,
+        _ => Err("Error: Dimensions must be u32.".to_string())?,
     };
-    header.clear();
-    if let Err(e) = reader.read_line(&mut header) {
-        return Err(format!("Error: Header contains an error: {}", e));
+
+    // max color value
+    line.clear();
+    reader.read_line(&mut line)
+            .map_err(|e| format!("Error: Header contain an error: {}", e))?;
+    if line.trim().parse::<u8>() != Ok(255) {
+        return Err("Error: Only 255 is supported for max color value".to_string());
     }
-    let _max_color_value: u8 = match header.trim().parse() {
-        Ok(n) if n == 255 => n,
-        Ok(_) => Err("Erreur: Only 255 is allowed for max color value".to_string())?,
-        Err(_) => Err("Erreur: Max color value must be in u8.".to_string())?
-    };
-    let mut rgb: Vec<u8> = Vec::new();
-    let mut rgba: Vec<u8> = Vec::new();
-    for byte_or_error in reader.bytes() {
-        let byte = byte_or_error.unwrap();
-        rgb.push(byte);
-        if rgb.len() == 3 {
-            rgba.extend(rgb);
-            rgba.push(255);
-            rgb = Vec::new();
-        }
-    }
-    if rgba.len() !=  (w * h * 4) as usize {
-        Err(format!("Error: Data length ({})does not match expected size for image of {}x{}", rgba.len() / 4, w, h))?
-    }
-    Ok((rgba, (w, h)))
+
+    // slice bytes
+    let bytes = &mmap[reader.position() as usize..];
+
+    let dim = (w, h);
+    let img = RawImage2d::from_raw_rgb_reversed(bytes, dim);
+    Ok((img, dim))
 }
