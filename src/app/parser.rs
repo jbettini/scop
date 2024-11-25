@@ -155,33 +155,42 @@ impl Default for Obj {
     }
 }
 
-// pub fn check_coherence(parsed_obj: &Obj) -> Result<(), String> {
-//     let vlen: u32 = parsed_obj.vertexs.len() as u32;
-//     let vnlen: u32 = parsed_obj.vn.len() as u32;
-//     if vlen <= 0 || vlen >= 100000{
-//         return Err(format!("Error: vertexs must be between 1 and 1e6."));
-//     } else {
-//         for face in &parsed_obj.faces {
-//             for v in &face.f {
-//                 if *v <= 0 || *v > vlen {
-//                     return Err(format!("Error: A face is out of the vertex range."));
-//                 }
-//             }
-//             if vnlen != 0 {
-//                 for vn in &face.vn {
-//                     if *vn <= 0 || *vn > vnlen {
-//                         return Err(format!("Error: A vn is out of the vertex normals range."));
-//                     }
-//                 }
-//             }
-//             // TODO add check for vt
-//             if has_duplicate(&face.f) {
-//                 return Err(format!("Error: A face contain duplicate vertex."));
-//             }
-//         }
-//         Ok(())
-//     }
-// }
+pub fn check_coherence(parsed_obj: &Obj) -> Result<(), String> {
+    let vlen: u32 = parsed_obj.vertexs.len() as u32;
+    let vnlen: u32 = parsed_obj.vn.len() as u32;
+    let vtlen: u32 = parsed_obj.vt.len() as u32;
+
+    if vlen <= 0 {
+        return Err(format!("Error: vertexs must be between 1 and 1e6."));
+    } else {
+        for face in &parsed_obj.faces {
+            for v in &face.v {
+                if *v <= 0 || *v > vlen {
+                    return Err(format!("Error: A face is out of the vertex range."));
+                }
+            }
+            if vnlen != 1 {
+                for vn in &face.vn {
+                    if *vn <= 0 || *vn > vnlen {
+                        return Err(format!("Error: A vn is out of the vertex normals range."));
+                    }
+                }
+            }
+            if vtlen != 1 {
+                for vt in &face.vt {
+                    if *vt <= 0 || *vt > vtlen {
+                        return Err(format!("Error: A vn is out of the vertex normals range."));
+                    }
+                }
+            }
+            // // TODO add check for vt
+            // if has_duplicate(&face.f) {
+            //     return Err(format!("Error: A face contain duplicate vertex."));
+            // }
+        }
+        Ok(())
+    }
+}
 
 fn get_file_lines(filepath: &str) -> Result<Vec<String>, String> {
     let content = read_to_string(filepath).map_err(|e| format!("Error: Cannot open {}. {}", filepath, e))?;
@@ -277,6 +286,7 @@ pub fn obj_parser(filepath: &str) -> Result<Obj, String> {
                     obj.vertexs.push(v);
                 },
                 "f" => {
+                    // println!("{}", format!("len : {:?}", splited.len()));
                     if splited.len() < 3 || splited.len() > 4 {
                         return Err(format!("Error: Face can contain only triangles or quadrilaterals : {} {:?}.",key, splited));
                     }
@@ -327,12 +337,14 @@ pub fn obj_parser(filepath: &str) -> Result<Obj, String> {
                 }
                 _ => return Err(format!("Error: Invalid Token {}.", key)),
             }
+        } else {
+            return Err(format!("Error: A line does not respect the format."));
         }
     }
     println!("loop: {:.2?}", start_time.elapsed());
-    // if let Err(error) = check_coherence(&obj) {
-    //     return Err(format!("{}", error));
-    // }
+    if let Err(error) = check_coherence(&obj) {
+        return Err(format!("{}", error));
+    }
     if obj.vt.len() <= 1 {
         obj.get_min_max();
     }
@@ -414,7 +426,14 @@ pub fn ppm_parser(filepath: &str) -> Result<(RawImage2d<u8>, (u32, u32)), String
 
     // slice bytes
     let bytes = &mmap[reader.position() as usize..];
-
+    let expected_size: usize = match (w * h * 3).try_into() {
+        Ok(size) => size,
+        Err(_) => return Err("Error: Invalid dimensions for pixmap.".to_string()),
+    };
+    
+    if bytes.len() != expected_size {
+        return Err("Error: Invalid pixmap.".to_string());
+    }
     let dim = (w, h);
     let img = RawImage2d::from_raw_rgb_reversed(bytes, dim);
     Ok((img, dim))
