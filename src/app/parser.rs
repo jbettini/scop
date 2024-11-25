@@ -160,7 +160,7 @@ pub fn check_coherence(parsed_obj: &Obj) -> Result<(), String> {
     let vnlen: u32 = parsed_obj.vn.len() as u32;
     let vtlen: u32 = parsed_obj.vt.len() as u32;
 
-    if vlen <= 0 {
+    if vlen <= 1 {
         return Err(format!("Error: vertexs must be between 1 and 1e6."));
     } else {
         for face in &parsed_obj.faces {
@@ -183,10 +183,11 @@ pub fn check_coherence(parsed_obj: &Obj) -> Result<(), String> {
                     }
                 }
             }
-            // // TODO add check for vt
-            // if has_duplicate(&face.f) {
-            //     return Err(format!("Error: A face contain duplicate vertex."));
-            // }
+            if face.v[0] == face.v[1] || face.v[0] == face.v[2] || face.v[1] == face.v[2] {
+                return Err(format!("Error: A face contain a duplicate indice {:?}.", face));
+            } else if face.vt[0] == face.vt[1] || face.vt[0] == face.vt[2] || face.vt[1] == face.vt[2] {
+                return Err(format!("Error: A face contain a duplicate indice {:?}.", face));
+            }
         }
         Ok(())
     }
