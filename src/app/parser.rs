@@ -287,7 +287,6 @@ pub fn obj_parser(filepath: &str) -> Result<Obj, String> {
                     obj.vertexs.push(v);
                 },
                 "f" => {
-                    // println!("{}", format!("len : {:?}", splited.len()));
                     if splited.len() < 3 || splited.len() > 4 {
                         return Err(format!("Error: Face can contain only triangles or quadrilaterals : {} {:?}.",key, splited));
                     }
@@ -325,6 +324,9 @@ pub fn obj_parser(filepath: &str) -> Result<Obj, String> {
                         return Err(format!("Error: Invalid format : {} {:?}.", key, splited));
                     }
                     let v = get_v(&[splited[0], splited[1], splited[2]])?;
+                    if v[0] < -1.0 || v[0] > 1.0 || v[1] < -1.0 || v[1] > 1.0 || v[2] < -1.0 || v[2] > 1.0 {
+                        return Err(format!("Error: Invalid value : {} {:?}.", key, splited));
+                    }
                     obj.vn.push(v);
                 },
                 "vt" => {
@@ -332,7 +334,12 @@ pub fn obj_parser(filepath: &str) -> Result<Obj, String> {
                         return Err(format!("Error: Invalid format : {} {:?}.", key, splited));
                     }
                     match (splited[0].parse::<f32>(), splited[1].parse::<f32>()) {
-                        (Ok(u), Ok(v)) => obj.vt.push([u, v]),
+                        (Ok(u), Ok(v)) => {
+                            if u < 0.0 || u > 1.0 || v < 0.0 || v > 1.0 {
+                                return Err(format!("Error: Invalid value : {} {:?}.", key, splited));
+                            }
+                            obj.vt.push([u, v])
+                        },
                         _ => Err(format!("Error: Invalid texture coordinates must be f32."))?
                     }
                 }
