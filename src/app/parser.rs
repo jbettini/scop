@@ -4,7 +4,9 @@ use glium::{
     self, glutin::surface::WindowSurface, texture::RawImage2d, Display, Texture2d
 };
 
-use std::{fs::{read_to_string, File}, io::{BufRead, Cursor}, time::Instant};
+// use std::{fs::{read_to_string, File}, io::{BufRead, Cursor}, time::Instant};
+use std::{fs::{read_to_string, File}, io::{BufRead, Cursor}};
+
 use memmap2::Mmap;
 
 #[derive(Clone, Debug)]
@@ -185,8 +187,6 @@ pub fn check_coherence(parsed_obj: &Obj) -> Result<(), String> {
             }
             if face.v[0] == face.v[1] || face.v[0] == face.v[2] || face.v[1] == face.v[2] {
                 return Err(format!("Error: A face contain a duplicate indice {:?}.", face));
-            } else if face.vt[0] == face.vt[1] || face.vt[0] == face.vt[2] || face.vt[1] == face.vt[2] {
-                return Err(format!("Error: A face contain a duplicate indice {:?}.", face));
             }
         }
         Ok(())
@@ -243,11 +243,11 @@ fn triangulize(splited: Vec<&str>) -> Vec<Vec<&str>> {
 }
 
 pub fn obj_parser(filepath: &str) -> Result<Obj, String> {
-    let start_time = Instant::now();
+    // let start_time = Instant::now();
     let mut current_material = "off".to_string();
     let lines = get_file_lines(filepath)?;
     let mut obj: Obj = Obj::new();
-    println!("read: {:.2?}", start_time.elapsed());
+    // println!("read: {:.2?}", start_time.elapsed());
     for line in lines {
         if let Some((key, rest)) = line.split_once(' ') {
             let splited: Vec<&str> = rest.split_whitespace().collect();
@@ -349,7 +349,7 @@ pub fn obj_parser(filepath: &str) -> Result<Obj, String> {
             return Err(format!("Error: A line does not respect the format."));
         }
     }
-    println!("loop: {:.2?}", start_time.elapsed());
+    // println!("loop: {:.2?}", start_time.elapsed());
     if let Err(error) = check_coherence(&obj) {
         return Err(format!("{}", error));
     }
@@ -357,8 +357,8 @@ pub fn obj_parser(filepath: &str) -> Result<Obj, String> {
         obj.get_min_max();
     }
     obj.init_centroid();
-    println!("obj_parser: {:.2?}", start_time.elapsed());
-    println!("----------------------");
+    // println!("obj_parser: {:.2?}", start_time.elapsed());
+    // println!("----------------------");
 
     Ok(obj)
 }
