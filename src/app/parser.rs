@@ -14,7 +14,8 @@ pub struct Face {
     pub v: [u32; 3],
     pub vn: [u32; 3],
     pub vt: [u32; 3],
-    pub mtl: String
+    pub mtl: String,
+    pub id: i32
 }
 
 impl Face {
@@ -22,16 +23,18 @@ impl Face {
         v: [u32; 3],
         vn: [u32; 3],
         vt: [u32; 3],
-        mtl: String) -> Self 
+        mtl: String,
+        id: i32 ) -> Self 
     {
-        Self { v, vt, vn, mtl }
+        Self { v, vt, vn, mtl, id}
     }
-    pub fn from_vvnvt(vvnvt: Vec<[u32; 3]>, mtl: String) -> Self {
+    pub fn from_vvnvt(vvnvt: Vec<[u32; 3]>, mtl: String, id: i32) -> Self {
         Self { 
             v: [vvnvt[0][0], vvnvt[1][0], vvnvt[2][0]],
             vn: [vvnvt[0][1], vvnvt[1][1], vvnvt[2][1]],
             vt: [vvnvt[0][2], vvnvt[1][2], vvnvt[2][2]],
-            mtl
+            mtl,
+            id
         }
     }
 }
@@ -247,6 +250,7 @@ pub fn obj_parser(filepath: &str) -> Result<Obj, String> {
     let mut current_material = "off".to_string();
     let lines = get_file_lines(filepath)?;
     let mut obj: Obj = Obj::new();
+    let mut face_id: i32 = 0;
     // println!("read: {:.2?}", start_time.elapsed());
     for line in lines {
         if let Some((key, rest)) = line.split_once(' ') {
@@ -313,7 +317,8 @@ pub fn obj_parser(filepath: &str) -> Result<Obj, String> {
                                 _ => return Err(format!("Error: Invalid face format in '{}'", args))
                             }
                         }
-                        obj.faces.push(Face::from_vvnvt(vvnvt, current_material.clone()));
+                        obj.faces.push(Face::from_vvnvt(vvnvt, current_material.clone(), face_id));
+                        face_id += 1;
                     }
                 },
                 "s" => {

@@ -5,20 +5,23 @@ pub struct Mesh {
 	position: [f32; 3],
 	pub normal: [f32; 3],
 	pub tex_coords: [f32; 2],
+    pub id: i32
 }
 
-glium::implement_vertex!(Mesh, position, normal, tex_coords);
+glium::implement_vertex!(Mesh, position, normal, tex_coords, id);
 
 impl Mesh {
     pub fn new(
         position: [f32; 3],
         normal: [f32; 3],
         tex_coords: [f32; 2],
+        id: i32
     ) -> Self {
         Self {
             position,
             normal,
-            tex_coords
+            tex_coords,
+            id
         }
     }
     pub fn get_mesh_vector(ctx: & mut Ctx) -> Vec<Self> {
@@ -46,7 +49,7 @@ impl Mesh {
                 } else {
                     obj.vt[face.vt[i] as usize]
                 };
-                mesh.push(Mesh::new(vertex, normal, texture));
+                mesh.push(Mesh::new(vertex, normal, texture, face.id));
             }
         }
         return mesh;
