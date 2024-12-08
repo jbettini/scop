@@ -32,12 +32,12 @@ impl Ctx {
             y_factor: 0.0,
             z_factor: 8.0,
             rot_speed: 0.0,
-            shading: 0,
+            shading: 1,
             backface: true,
             polmode: 0,
             speed_factor: 0.015,
             obj: {
-                let obj_ret = obj_parser("./obj/42.obj");
+                let obj_ret = obj_parser("./obj/boat.obj");
                 match obj_ret {
                     Ok(obj) => obj,
                     Err(err) => {

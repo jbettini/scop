@@ -28,7 +28,7 @@ impl Renderer {
             mesh: Mesh::get_mesh_vector(ctx),
             shaders: Shader::default(),
             img: {
-                let img = Images::new(display, "/home/jbettini/scop/obj/Texture/metal.ppm");
+                let img = Images::new(display, "./obj/Texture/rust.ppm");
                 match img {
                     Ok(img) => img,
                     Err(err) => {
