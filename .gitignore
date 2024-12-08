@@ -21,7 +21,4 @@ Cargo.lock
 #.idea/
 
 
-*.jpg
-*.png
-*.pdf
 .DS_Store
