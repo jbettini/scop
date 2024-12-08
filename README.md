@@ -37,7 +37,7 @@ Scop is a graphical project developed using Glium a wrapper OpenGL for rust, to 
 
 ## Screenshot 
 
-![](./screenshots/1.png)
-![](./screenshots/2.png)
-![](./screenshots/3.png)
+![Suzane](./screenshots/1.png)
+![Boat](./screenshots/2.png)
+![Bot](./screenshots/3.png)
 
