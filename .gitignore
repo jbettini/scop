@@ -24,3 +24,4 @@ Cargo.lock
 *.jpg
 *.png
 *.pdf
+.DS_Store
